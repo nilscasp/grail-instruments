@@ -1,0 +1,432 @@
+import type { Instrument } from '@/lib/types'
+
+export const instruments: Instrument[] = [
+  {
+    slug: 'ayasa-kurd-9-ember',
+    displayTitle: 'Ayasa Kurd 9 Ember',
+    maker: { name: 'Ayasa Instruments', slug: 'ayasa' },
+    scaleName: 'Kurd 9',
+    key: 'D',
+    notes: ['D3', 'A3', 'Bb3', 'C4', 'D4', 'E4', 'F4', 'G4', 'A4'],
+    price: 2800,
+    currency: 'EUR',
+    status: 'available',
+    featured: true,
+    year: 2024,
+    location: 'Germany',
+    images: [
+      { src: '/images/instruments/ayasa-kurd-1.jpg', alt: 'Ayasa Kurd 9 top view' },
+      { src: '/images/instruments/ayasa-kurd-2.jpg', alt: 'Ayasa Kurd 9 angled view' },
+      { src: '/images/instruments/ayasa-kurd-3.jpg', alt: 'Ayasa Kurd 9 detail' },
+    ],
+    audio: [
+      { src: '/audio/ayasa-kurd-sample.mp3', label: 'Full scale demonstration' },
+      { src: '/audio/ayasa-kurd-ambient.mp3', label: 'Ambient improvisation' },
+    ],
+    tags: ['warm', 'deep', 'meditative', 'beginner-friendly'],
+    specs: {
+      steelType: 'DC04 Nitrided',
+      finish: 'Ember (burnt sienna gradient)',
+      diameter: '53 cm',
+      weight: '4.2 kg',
+      included: ['Hardcase', 'Microfiber cloth', 'Care instructions'],
+    },
+    listeningNotes: 'A cathedral of sound in your hands. This Kurd opens with a grounding bass that feels like the first breath of morning. The upper notes sing with crystalline clarity, yet remain warm—never harsh. Perfect for meditation or those quiet hours when you need to return to yourself.',
+    soundDescription: 'Deep sustain, balanced overtones across all notes. The bass carries remarkable presence without overwhelming the higher registers. Response is forgiving—ideal for developing technique.',
+    curation: {
+      tuning: true,
+      balance: true,
+      clarity: true,
+      sustain: true,
+      craftsmanship: true,
+    },
+    createdAt: '2024-01-15',
+  },
+  {
+    slug: 'yishama-celtic-minor-moonlight',
+    displayTitle: 'Yishama Celtic Minor Moonlight',
+    maker: { name: 'Yishama Pantam', slug: 'yishama' },
+    scaleName: 'Celtic Minor',
+    key: 'E',
+    notes: ['E3', 'B3', 'C4', 'D4', 'E4', 'F#4', 'G4', 'A4', 'B4'],
+    price: 3200,
+    currency: 'EUR',
+    status: 'available',
+    featured: true,
+    year: 2024,
+    location: 'Israel',
+    images: [
+      { src: '/images/instruments/yishama-celtic-1.jpg', alt: 'Yishama Celtic Minor top view' },
+      { src: '/images/instruments/yishama-celtic-2.jpg', alt: 'Yishama Celtic Minor detail' },
+    ],
+    audio: [
+      { src: '/audio/yishama-celtic-sample.mp3', label: 'Scale walkthrough' },
+    ],
+    tags: ['crystalline', 'ethereal', 'responsive', 'expressive'],
+    specs: {
+      steelType: 'Stainless Steel',
+      finish: 'Moonlight (silver with subtle blue patina)',
+      diameter: '54 cm',
+      weight: '4.5 kg',
+      included: ['Softcase', 'Microfiber cloth'],
+    },
+    listeningNotes: 'This Celtic Minor has a voice that seems to come from somewhere beyond—ethereal yet grounded, mysterious yet inviting. The minor intervals create a natural storytelling quality. Each phrase feels like the beginning of something ancient.',
+    soundDescription: 'Bright, bell-like clarity with excellent note separation. Fast response makes it ideal for intricate patterns. The stainless steel adds shimmer to the overtones.',
+    curation: {
+      tuning: true,
+      balance: true,
+      clarity: true,
+      sustain: true,
+      craftsmanship: true,
+    },
+    createdAt: '2024-01-20',
+  },
+  {
+    slug: 'makai-pygmy-ember',
+    displayTitle: 'Makai Pygmy Ember',
+    maker: { name: 'Makai', slug: 'makai' },
+    scaleName: 'Pygmy',
+    key: 'F',
+    notes: ['F3', 'Ab3', 'C4', 'Db4', 'Eb4', 'F4', 'Ab4', 'Bb4', 'C5'],
+    price: 2600,
+    currency: 'EUR',
+    status: 'reserved',
+    featured: false,
+    year: 2023,
+    location: 'France',
+    images: [
+      { src: '/images/instruments/makai-pygmy-1.jpg', alt: 'Makai Pygmy top view' },
+      { src: '/images/instruments/makai-pygmy-2.jpg', alt: 'Makai Pygmy angled' },
+    ],
+    audio: [
+      { src: '/audio/makai-pygmy-sample.mp3', label: 'Full demonstration' },
+    ],
+    tags: ['earthy', 'grounding', 'african-inspired', 'rhythmic'],
+    specs: {
+      steelType: 'DC04 Nitrided',
+      finish: 'Ember (oxidized bronze)',
+      diameter: '52 cm',
+      weight: '3.9 kg',
+      included: ['Evatek case', 'Cloth'],
+    },
+    listeningNotes: 'The Pygmy scale carries ancient memories—something primal stirs when you play it. This Makai exemplifies that quality with a groundedness that anchors every note. Play it slow, let each tone breathe, and you\'ll find yourself somewhere else entirely.',
+    soundDescription: 'Warm fundamental tones with earthy overtones. Less sustain than some, but the attack has beautiful presence. Perfect for rhythmic playing.',
+    curation: {
+      tuning: true,
+      balance: true,
+      clarity: true,
+      sustain: true,
+      craftsmanship: true,
+    },
+    createdAt: '2024-01-10',
+  },
+  {
+    slug: 'asachan-integral-midnight',
+    displayTitle: 'Asachan Integral Midnight',
+    maker: { name: 'Asachan', slug: 'asachan' },
+    scaleName: 'Integral',
+    key: 'D',
+    notes: ['D3', 'A3', 'B3', 'C4', 'D4', 'E4', 'F4', 'G4', 'A4', 'C5'],
+    price: 3800,
+    currency: 'EUR',
+    status: 'available',
+    featured: true,
+    year: 2024,
+    location: 'Japan',
+    images: [
+      { src: '/images/instruments/asachan-integral-1.jpg', alt: 'Asachan Integral top' },
+      { src: '/images/instruments/asachan-integral-2.jpg', alt: 'Asachan Integral side' },
+      { src: '/images/instruments/asachan-integral-3.jpg', alt: 'Asachan Integral close-up' },
+    ],
+    audio: [
+      { src: '/audio/asachan-integral-full.mp3', label: 'Full scale' },
+      { src: '/audio/asachan-integral-meditation.mp3', label: 'Meditation piece' },
+    ],
+    tags: ['expansive', 'cathedral', 'meditative', 'versatile'],
+    specs: {
+      steelType: 'DC04 Nitrided',
+      finish: 'Midnight (deep black with subtle patina)',
+      diameter: '55 cm',
+      weight: '4.8 kg',
+      included: ['Hard case', 'Stand', 'Cleaning kit'],
+    },
+    listeningNotes: 'The Integral scale offers endless possibilities—major, minor, and everything in between. This Asachan version treats that potential with the reverence it deserves. Ten notes that somehow feel like a hundred.',
+    soundDescription: 'Exceptional sustain with complex overtone structure. The additional high C5 opens compositional doors. Response is even across all notes, from gentle whispers to full resonance.',
+    curation: {
+      tuning: true,
+      balance: true,
+      clarity: true,
+      sustain: true,
+      craftsmanship: true,
+    },
+    createdAt: '2024-02-01',
+  },
+  {
+    slug: 'symphonic-steel-hijaz-copper',
+    displayTitle: 'Symphonic Steel Hijaz Copper',
+    maker: { name: 'Symphonic Steel', slug: 'symphonic-steel' },
+    scaleName: 'Hijaz',
+    key: 'D',
+    notes: ['D3', 'A3', 'Bb3', 'C#4', 'D4', 'E4', 'F4', 'G4', 'A4'],
+    price: 2950,
+    currency: 'EUR',
+    status: 'available',
+    featured: false,
+    year: 2023,
+    location: 'USA',
+    images: [
+      { src: '/images/instruments/symphonic-hijaz-1.jpg', alt: 'Symphonic Steel Hijaz top' },
+      { src: '/images/instruments/symphonic-hijaz-2.jpg', alt: 'Symphonic Steel Hijaz detail' },
+    ],
+    audio: [
+      { src: '/audio/symphonic-hijaz-sample.mp3', label: 'Scale demonstration' },
+    ],
+    tags: ['exotic', 'middle-eastern', 'dramatic', 'expressive'],
+    specs: {
+      steelType: 'DC04 Nitrided',
+      finish: 'Copper (polished copper patina)',
+      diameter: '53 cm',
+      weight: '4.3 kg',
+      included: ['Softcase', 'Cloth', 'Care guide'],
+    },
+    listeningNotes: 'Hijaz is the scale of deserts and ancient cities. The augmented second interval creates immediate tension and release—drama written into every phrase. This Symphonic Steel captures that exotic quality while remaining musical in any context.',
+    soundDescription: 'Bold fundamentals with pronounced character in the augmented intervals. Sustain is moderate, emphasizing the melodic over the ambient. Great for expressive, intentional playing.',
+    curation: {
+      tuning: true,
+      balance: true,
+      clarity: true,
+      sustain: true,
+      craftsmanship: true,
+    },
+    createdAt: '2023-12-15',
+  },
+  {
+    slug: 'spacedrum-minor-pentatonic-cosmos',
+    displayTitle: 'SpaceDrum Minor Pentatonic Cosmos',
+    maker: { name: 'Metal Sounds', slug: 'metal-sounds' },
+    scaleName: 'Minor Pentatonic',
+    key: 'A',
+    notes: ['A3', 'C4', 'D4', 'E4', 'G4', 'A4', 'C5', 'D5', 'E5'],
+    price: 1800,
+    currency: 'EUR',
+    status: 'sold',
+    featured: false,
+    year: 2023,
+    location: 'France',
+    images: [
+      { src: '/images/instruments/spacedrum-pentatonic-1.jpg', alt: 'SpaceDrum top view' },
+    ],
+    audio: [
+      { src: '/audio/spacedrum-sample.mp3', label: 'Quick demo' },
+    ],
+    tags: ['accessible', 'versatile', 'blues-friendly', 'beginner-friendly'],
+    specs: {
+      steelType: 'Steel (proprietary treatment)',
+      finish: 'Cosmos (deep blue gradient)',
+      diameter: '50 cm',
+      weight: '3.6 kg',
+      included: ['Bag', 'Cloth'],
+    },
+    listeningNotes: 'The minor pentatonic is the scale that never lies—every note belongs, every combination works. This SpaceDrum makes that accessibility tangible. Perfect for anyone starting their journey, yet deep enough for years of exploration.',
+    soundDescription: 'Clear, straightforward tone with good sustain. Response is consistent and forgiving. The smaller size makes it comfortable for extended sessions.',
+    curation: {
+      tuning: true,
+      balance: true,
+      clarity: true,
+      sustain: true,
+      craftsmanship: true,
+    },
+    createdAt: '2023-11-20',
+  },
+  {
+    slug: 'pantheon-steel-halo-equinox',
+    displayTitle: 'Pantheon Steel Halo Equinox',
+    maker: { name: 'Pantheon Steel', slug: 'pantheon-steel' },
+    scaleName: 'Equinox',
+    key: 'G',
+    notes: ['G3', 'C4', 'D4', 'Eb4', 'G4', 'A4', 'Bb4', 'C5', 'D5'],
+    price: 3500,
+    currency: 'EUR',
+    status: 'available',
+    featured: true,
+    year: 2024,
+    location: 'USA',
+    images: [
+      { src: '/images/instruments/pantheon-equinox-1.jpg', alt: 'Halo Equinox top' },
+      { src: '/images/instruments/pantheon-equinox-2.jpg', alt: 'Halo Equinox side' },
+      { src: '/images/instruments/pantheon-equinox-3.jpg', alt: 'Halo Equinox detail' },
+    ],
+    audio: [
+      { src: '/audio/pantheon-equinox-full.mp3', label: 'Full demonstration' },
+      { src: '/audio/pantheon-equinox-ambient.mp3', label: 'Ambient piece' },
+    ],
+    tags: ['balanced', 'clear', 'professional', 'versatile'],
+    specs: {
+      steelType: 'Nitrided Steel',
+      finish: 'Natural (brushed steel)',
+      diameter: '56 cm',
+      weight: '5.0 kg',
+      included: ['Hard case', 'Stand', 'Premium cloth', 'Certificate'],
+    },
+    listeningNotes: 'The Equinox scale walks a beautiful line between major and minor—it can go anywhere, become anything. This Halo is simply one of the finest instruments we\'ve had. Every note rings true, every phrase feels inevitable.',
+    soundDescription: 'Impeccable tuning with rich harmonic content. The sustain is generous but controlled. Professional-grade response allows for both delicate and powerful playing.',
+    curation: {
+      tuning: true,
+      balance: true,
+      clarity: true,
+      sustain: true,
+      craftsmanship: true,
+    },
+    createdAt: '2024-02-10',
+  },
+  {
+    slug: 'ayasa-amara-deep-forest',
+    displayTitle: 'Ayasa Amara Deep Forest',
+    maker: { name: 'Ayasa Instruments', slug: 'ayasa' },
+    scaleName: 'Amara',
+    key: 'C',
+    notes: ['C3', 'G3', 'A3', 'Bb3', 'C4', 'D4', 'E4', 'G4', 'A4'],
+    price: 2900,
+    currency: 'EUR',
+    status: 'reserved',
+    featured: false,
+    year: 2024,
+    location: 'Germany',
+    images: [
+      { src: '/images/instruments/ayasa-amara-1.jpg', alt: 'Ayasa Amara top' },
+      { src: '/images/instruments/ayasa-amara-2.jpg', alt: 'Ayasa Amara angled' },
+    ],
+    audio: [
+      { src: '/audio/ayasa-amara-sample.mp3', label: 'Demo' },
+    ],
+    tags: ['deep', 'earthy', 'grounding', 'warm'],
+    specs: {
+      steelType: 'DC04 Nitrided',
+      finish: 'Deep Forest (dark green with gold highlights)',
+      diameter: '54 cm',
+      weight: '4.4 kg',
+      included: ['Hardcase', 'Cloth'],
+    },
+    listeningNotes: 'The Amara is a scale that knows its roots. The low C ding provides a foundation that feels almost subterranean—play it in a forest and you\'ll understand why we named this one Deep Forest. Grounding, centering, essential.',
+    soundDescription: 'Deep bass with warm mid-range. Sustain is excellent in the lower notes. The scale moves beautifully between contemplative lows and bright highs.',
+    curation: {
+      tuning: true,
+      balance: true,
+      clarity: true,
+      sustain: true,
+      craftsmanship: true,
+    },
+    createdAt: '2024-01-25',
+  },
+  {
+    slug: 'echo-sound-sculpture-aeolian-golden',
+    displayTitle: 'Echo Sound Sculpture Aeolian Golden',
+    maker: { name: 'Echo Sound Sculpture', slug: 'echo-sound-sculpture' },
+    scaleName: 'Aeolian',
+    key: 'D',
+    notes: ['D3', 'A3', 'Bb3', 'C4', 'D4', 'E4', 'F4', 'G4', 'A4'],
+    price: 2450,
+    currency: 'EUR',
+    status: 'available',
+    featured: false,
+    year: 2023,
+    location: 'Netherlands',
+    images: [
+      { src: '/images/instruments/echo-aeolian-1.jpg', alt: 'Echo Aeolian top' },
+      { src: '/images/instruments/echo-aeolian-2.jpg', alt: 'Echo Aeolian angled' },
+    ],
+    audio: [
+      { src: '/audio/echo-aeolian-sample.mp3', label: 'Full scale' },
+    ],
+    tags: ['natural-minor', 'melancholic', 'expressive', 'classical'],
+    specs: {
+      steelType: 'Ember Steel',
+      finish: 'Golden (brass patina)',
+      diameter: '52 cm',
+      weight: '4.0 kg',
+      included: ['Softcase', 'Care instructions'],
+    },
+    listeningNotes: 'Natural minor—the classical foundation. This Echo Aeolian speaks the language of centuries of Western music while remaining entirely itself. Beautiful for those who want to bridge the handpan world with other musical traditions.',
+    soundDescription: 'Balanced tone with classical minor character. Good sustain and consistent response. The golden finish adds subtle warmth to the visual and acoustic experience.',
+    curation: {
+      tuning: true,
+      balance: true,
+      clarity: true,
+      sustain: true,
+      craftsmanship: true,
+    },
+    createdAt: '2023-12-01',
+  },
+  {
+    slug: 'yishama-sabye-ocean',
+    displayTitle: 'Yishama Sabye Ocean',
+    maker: { name: 'Yishama Pantam', slug: 'yishama' },
+    scaleName: 'Sabye',
+    key: 'C',
+    notes: ['C3', 'G3', 'C4', 'D4', 'Eb4', 'G4', 'Bb4', 'C5', 'D5'],
+    price: 3400,
+    currency: 'EUR',
+    status: 'available',
+    featured: true,
+    year: 2024,
+    location: 'Israel',
+    images: [
+      { src: '/images/instruments/yishama-sabye-1.jpg', alt: 'Yishama Sabye top' },
+      { src: '/images/instruments/yishama-sabye-2.jpg', alt: 'Yishama Sabye side' },
+      { src: '/images/instruments/yishama-sabye-3.jpg', alt: 'Yishama Sabye detail' },
+    ],
+    audio: [
+      { src: '/audio/yishama-sabye-full.mp3', label: 'Full demonstration' },
+      { src: '/audio/yishama-sabye-ambient.mp3', label: 'Ocean ambient' },
+    ],
+    tags: ['bright', 'joyful', 'west-african', 'energetic'],
+    specs: {
+      steelType: 'Stainless Steel',
+      finish: 'Ocean (deep blue-green patina)',
+      diameter: '54 cm',
+      weight: '4.6 kg',
+      included: ['Hard case', 'Stand', 'Cleaning kit'],
+    },
+    listeningNotes: 'Sabye is sunshine in scale form—West African in origin, universal in joy. This Yishama version captures that exuberance while adding the maker\'s signature clarity. When you need to be lifted, this is the instrument that answers.',
+    soundDescription: 'Bright, clear tones with excellent projection. Fast attack and good sustain. The stainless steel gives it brilliance without harshness.',
+    curation: {
+      tuning: true,
+      balance: true,
+      clarity: true,
+      sustain: true,
+      craftsmanship: true,
+    },
+    createdAt: '2024-02-05',
+  },
+]
+
+export function getInstrumentBySlug(slug: string): Instrument | undefined {
+  return instruments.find((i) => i.slug === slug)
+}
+
+export function getFeaturedInstruments(): Instrument[] {
+  return instruments.filter((i) => i.featured)
+}
+
+export function getInstrumentsByMaker(makerSlug: string): Instrument[] {
+  return instruments.filter((i) => i.maker.slug === makerSlug)
+}
+
+export function getAvailableInstruments(): Instrument[] {
+  return instruments.filter((i) => i.status === 'available')
+}
+
+export function getAllScales(): string[] {
+  const scales = new Set(instruments.map((i) => i.scaleName))
+  return Array.from(scales).sort()
+}
+
+export function getAllKeys(): string[] {
+  const keys = new Set(instruments.map((i) => i.key))
+  return Array.from(keys).sort()
+}
+
+export function getAllTags(): string[] {
+  const tags = new Set(instruments.flatMap((i) => i.tags))
+  return Array.from(tags).sort()
+}

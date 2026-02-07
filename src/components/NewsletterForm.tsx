@@ -24,20 +24,22 @@ export function NewsletterForm({ variant = 'inline', className }: NewsletterForm
     setErrorMessage('')
 
     try {
-      // Simulate API call
-      await new Promise((resolve) => setTimeout(resolve, 1000))
-      
-      // In production, this would be an actual API call
-      // const response = await fetch('/api/newsletter', {
-      //   method: 'POST',
-      //   body: JSON.stringify({ email }),
-      // })
+      const response = await fetch('/api/newsletter', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email }),
+      })
+
+      if (!response.ok) {
+        const data = await response.json()
+        throw new Error(data.error || 'Subscription failed')
+      }
 
       setStatus('success')
       setEmail('')
     } catch (error) {
       setStatus('error')
-      setErrorMessage('Something went wrong. Please try again.')
+      setErrorMessage(error instanceof Error ? error.message : 'Something went wrong. Please try again.')
     }
   }
 

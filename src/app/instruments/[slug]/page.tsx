@@ -8,8 +8,7 @@ import { motion } from 'framer-motion'
 import { 
   ArrowLeft, 
   Check, 
-  Play, 
-  Pause, 
+  Play,
   Music, 
   Ruler, 
   Weight, 

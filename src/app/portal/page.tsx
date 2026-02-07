@@ -140,7 +140,7 @@ export default function PortalPage() {
                 We chose a different path. By controlling when instruments become available and reviewing applications thoughtfully, we can ensure each handpan finds not just a buyer, but a home.
               </p>
               <p>
-                This isn't for everyone. If you need instant gratification, there are shops for that. But if you want an instrument chosen with care and matched with intention—this is the way.
+                This isn&apos;t for everyone. If you need instant gratification, there are shops for that. But if you want an instrument chosen with care and matched with intention—this is the way.
               </p>
             </div>
           </motion.div>

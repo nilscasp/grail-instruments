@@ -6,7 +6,7 @@ export const siteConfig: SiteConfig = {
   url: 'https://grailinstruments.com',
   ogImage: '/images/og-image.jpg',
   portalStatus: 'open',
-  nextDropDate: '2024-04-01',
+  nextDropDate: '2026-04-01',
   socialLinks: {
     instagram: 'https://instagram.com/grailinstruments',
     youtube: 'https://youtube.com/@grailinstruments',

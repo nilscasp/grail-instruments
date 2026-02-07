@@ -43,15 +43,18 @@ function ApplyFormContent() {
     setStatus('loading')
 
     try {
-      // Simulate API call
-      await new Promise((resolve) => setTimeout(resolve, 1500))
-      
-      // In production, this would be an actual API call:
-      // await fetch('/api/apply', {
-      //   method: 'POST',
-      //   headers: { 'Content-Type': 'application/json' },
-      //   body: JSON.stringify(formData),
-      // })
+      const response = await fetch('/api/apply', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          ...formData,
+          instrumentSlug: instrumentSlug || undefined,
+        }),
+      })
+
+      if (!response.ok) {
+        throw new Error('Submission failed')
+      }
 
       setStatus('success')
     } catch (error) {

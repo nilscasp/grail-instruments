@@ -10,7 +10,6 @@ type Phase = 'gate' | 'open'
 export default function LandingPage() {
   const [mounted, setMounted] = useState(false)
   const [phase, setPhase] = useState<Phase>('gate')
-  const [surging, setSurging] = useState(false)
   const [muted, setMuted] = useState(false)
   const audioRef = useRef<HTMLAudioElement>(null)
 
@@ -23,9 +22,6 @@ export default function LandingPage() {
 
   const enter = () => {
     setPhase('open')
-    // Trigger a brief surge through the rings
-    setSurging(true)
-    setTimeout(() => setSurging(false), 2800)
     if (audioRef.current) {
       audioRef.current.volume = 0
       audioRef.current.play().catch(() => {})
@@ -110,7 +106,6 @@ export default function LandingPage() {
               borderRadius: '50%',
             }}
           >
-            {/* Base pulse ring – unchanged */}
             <motion.div
               animate={{
                 opacity: [0.12 + i * 0.06, 0.3 + i * 0.09, 0.12 + i * 0.06],
@@ -131,25 +126,6 @@ export default function LandingPage() {
                   i === 3
                     ? '0 0 40px rgba(200,169,106,0.07), inset 0 0 40px rgba(200,169,106,0.04)'
                     : undefined,
-              }}
-            />
-
-            {/* Surge amplifier – no own animation, just a smooth glow that
-                fades in/out. The base pulse wave carries the motion;
-                the extra brightness makes it feel organically stronger. */}
-            <motion.div
-              animate={{ opacity: surging ? 0.4 - i * 0.06 : 0 }}
-              transition={{
-                duration: surging ? 1.6 : 3.0,
-                ease: 'easeInOut',
-              }}
-              style={{
-                position: 'absolute',
-                inset: 0,
-                borderRadius: '50%',
-                border: `1px solid rgba(200,169,106,${0.55 + i * 0.1})`,
-                boxShadow: `0 0 ${14 + i * 9}px rgba(200,169,106,0.28), inset 0 0 ${6 + i * 4}px rgba(200,169,106,0.08)`,
-                pointerEvents: 'none',
               }}
             />
           </motion.div>

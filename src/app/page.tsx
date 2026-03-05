@@ -134,31 +134,21 @@ export default function LandingPage() {
               }}
             />
 
-            {/* Surge amplifier – same wave, same tempo, layered on top when entering */}
+            {/* Surge amplifier – no own animation, just a smooth glow that
+                fades in/out. The base pulse wave carries the motion;
+                the extra brightness makes it feel organically stronger. */}
             <motion.div
-              animate={{
-                opacity: surging
-                  ? [0.18 + i * 0.07, 0.7 + i * 0.1, 0.18 + i * 0.07]
-                  : 0,
-                scale: surging
-                  ? [1, 1 + 0.04 * (4 - i), 1]
-                  : 1,
-              }}
-              transition={surging ? {
-                duration: 5 + i,
-                repeat: Infinity,
+              animate={{ opacity: surging ? 0.4 - i * 0.06 : 0 }}
+              transition={{
+                duration: surging ? 1.6 : 3.0,
                 ease: 'easeInOut',
-                delay: i * 0.8,
-              } : {
-                opacity: { duration: 2.0, ease: 'easeOut' },
-                scale:   { duration: 2.0, ease: 'easeOut' },
               }}
               style={{
                 position: 'absolute',
                 inset: 0,
                 borderRadius: '50%',
-                border: `1px solid rgba(200,169,106,${0.5 + i * 0.12})`,
-                boxShadow: `0 0 ${10 + i * 8}px rgba(200,169,106,0.25)`,
+                border: `1px solid rgba(200,169,106,${0.55 + i * 0.1})`,
+                boxShadow: `0 0 ${14 + i * 9}px rgba(200,169,106,0.28), inset 0 0 ${6 + i * 4}px rgba(200,169,106,0.08)`,
                 pointerEvents: 'none',
               }}
             />

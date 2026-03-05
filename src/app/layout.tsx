@@ -1,8 +1,10 @@
 import type { Metadata, Viewport } from 'next'
+import Script from 'next/script'
 import { siteConfig } from '@/lib/config'
 import './globals.css'
 
 export const metadata: Metadata = {
+  metadataBase: new URL(siteConfig.url),
   title: {
     default: `${siteConfig.name} — Rare Handpans, Chosen with Care`,
     template: `%s | ${siteConfig.name}`,
@@ -54,12 +56,6 @@ export const metadata: Metadata = {
       'max-snippet': -1,
     },
   },
-  icons: {
-    icon: '/favicon.ico',
-    shortcut: '/favicon-16x16.png',
-    apple: '/apple-touch-icon.png',
-  },
-  manifest: '/site.webmanifest',
 }
 
 export const viewport: Viewport = {
@@ -93,9 +89,34 @@ export default function RootLayout({
             }),
           }}
         />
+        {/* Brevo form configuration */}
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `
+              window.REQUIRED_CODE_ERROR_MESSAGE = 'Wähle bitte einen Ländervorwahl aus.';
+              window.LOCALE = 'de';
+              window.EMAIL_INVALID_MESSAGE = "Die eingegebenen Informationen sind nicht gültig. Bitte überprüfe das Feldformat und versuche es erneut.";
+              window.REQUIRED_ERROR_MESSAGE = "Dieses Feld darf nicht leer sein.";
+              window.GENERIC_INVALID_MESSAGE = "Die eingegebenen Informationen sind nicht gültig. Bitte überprüfe das Feldformat und versuche es erneut.";
+              window.translation = {
+                common: {
+                  selectedList: '{quantity} Liste ausgewählt',
+                  selectedLists: '{quantity} Listen ausgewählt',
+                  selectedOption: '{quantity} ausgewählt',
+                  selectedOptions: '{quantity} ausgewählt',
+                }
+              };
+              var AUTOHIDE = Boolean(0);
+            `,
+          }}
+        />
       </head>
       <body className="min-h-screen">
         {children}
+        <Script
+          src="https://sibforms.com/forms/end-form/build/main.js"
+          strategy="afterInteractive"
+        />
       </body>
     </html>
   )

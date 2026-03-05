@@ -89,30 +89,6 @@ export default function LandingPage() {
           pointerEvents: 'none',
         }}
       >
-        {/* Surge rings – one-shot ripple on enter, don't affect base rhythm */}
-        <AnimatePresence>
-          {surging && [160, 270, 390, 520].map((size, i) => (
-            <motion.div
-              key={`surge-${size}`}
-              initial={{ opacity: 0.65 - i * 0.08, scale: 1 }}
-              animate={{ opacity: 0, scale: 1.55 + i * 0.05 }}
-              exit={{}}
-              transition={{ duration: 2.0, ease: [0.15, 0, 0.6, 1], delay: i * 0.14 }}
-              style={{
-                position: 'absolute',
-                width: size,
-                height: size,
-                left: -size / 2,
-                top: -size / 2,
-                borderRadius: '50%',
-                border: `1px solid rgba(200,169,106,1)`,
-                boxShadow: `0 0 12px rgba(200,169,106,0.25)`,
-                pointerEvents: 'none',
-              }}
-            />
-          ))}
-        </AnimatePresence>
-
         {[520, 390, 270, 160].map((size, i) => (
           <motion.div
             key={size}
@@ -134,6 +110,7 @@ export default function LandingPage() {
               borderRadius: '50%',
             }}
           >
+            {/* Base pulse ring – unchanged */}
             <motion.div
               animate={{
                 opacity: [0.12 + i * 0.06, 0.3 + i * 0.09, 0.12 + i * 0.06],
@@ -154,6 +131,35 @@ export default function LandingPage() {
                   i === 3
                     ? '0 0 40px rgba(200,169,106,0.07), inset 0 0 40px rgba(200,169,106,0.04)'
                     : undefined,
+              }}
+            />
+
+            {/* Surge amplifier – same wave, same tempo, layered on top when entering */}
+            <motion.div
+              animate={{
+                opacity: surging
+                  ? [0.18 + i * 0.07, 0.7 + i * 0.1, 0.18 + i * 0.07]
+                  : 0,
+                scale: surging
+                  ? [1, 1 + 0.04 * (4 - i), 1]
+                  : 1,
+              }}
+              transition={surging ? {
+                duration: 5 + i,
+                repeat: Infinity,
+                ease: 'easeInOut',
+                delay: i * 0.8,
+              } : {
+                opacity: { duration: 2.0, ease: 'easeOut' },
+                scale:   { duration: 2.0, ease: 'easeOut' },
+              }}
+              style={{
+                position: 'absolute',
+                inset: 0,
+                borderRadius: '50%',
+                border: `1px solid rgba(200,169,106,${0.5 + i * 0.12})`,
+                boxShadow: `0 0 ${10 + i * 8}px rgba(200,169,106,0.25)`,
+                pointerEvents: 'none',
               }}
             />
           </motion.div>

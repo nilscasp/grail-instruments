@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useRef, useEffect } from 'react'
-import { motion, AnimatePresence } from 'framer-motion'
+import { motion, AnimatePresence, LayoutGroup } from 'framer-motion'
 import { NewsletterForm } from '@/components/NewsletterForm'
 import { Volume2, VolumeX } from 'lucide-react'
 
@@ -178,15 +178,21 @@ export default function LandingPage() {
       <div className="absolute inset-0 noise-overlay pointer-events-none" />
 
       {/* Content */}
+      <LayoutGroup>
       <div
         className="relative z-10 flex flex-col items-center text-center px-8"
         style={{ width: 360, marginTop: '-5vh' }}
       >
-        {/* Logo */}
+        {/* Logo – layout-animated so it glides up smoothly when phase changes */}
         <motion.div
+          layout
           initial={{ opacity: 0, scale: 0.88 }}
           animate={{ opacity: 1, scale: 1 }}
-          transition={{ duration: 2.5, ease: [0.4, 0, 0.2, 1] }}
+          transition={{
+            opacity: { duration: 2.5, ease: [0.4, 0, 0.2, 1] },
+            scale:   { duration: 2.5, ease: [0.4, 0, 0.2, 1] },
+            layout:  { duration: 1.2, ease: [0.4, 0, 0.2, 1] },
+          }}
           className="mb-8"
         >
           {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -201,9 +207,14 @@ export default function LandingPage() {
 
         {/* Divider */}
         <motion.div
+          layout
           initial={{ scaleX: 0, opacity: 0 }}
           animate={{ scaleX: 1, opacity: 1 }}
-          transition={{ duration: 1.5, delay: 1.2 }}
+          transition={{
+            scaleX:  { duration: 1.5, delay: 1.2 },
+            opacity: { duration: 1.5, delay: 1.2 },
+            layout:  { duration: 1.2, ease: [0.4, 0, 0.2, 1] },
+          }}
           style={{ width: 32, height: 1, background: 'rgba(200,169,106,0.45)', marginBottom: 32 }}
         />
 
@@ -317,6 +328,7 @@ export default function LandingPage() {
           )}
         </AnimatePresence>
       </div>
+      </LayoutGroup>
 
       {/* Mute toggle – appears after entering */}
       <AnimatePresence>

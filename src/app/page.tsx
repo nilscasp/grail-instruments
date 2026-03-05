@@ -10,6 +10,7 @@ type Phase = 'gate' | 'open'
 export default function LandingPage() {
   const [mounted, setMounted] = useState(false)
   const [phase, setPhase] = useState<Phase>('gate')
+  const [surging, setSurging] = useState(false)
   const [muted, setMuted] = useState(false)
   const audioRef = useRef<HTMLAudioElement>(null)
 
@@ -22,6 +23,9 @@ export default function LandingPage() {
 
   const enter = () => {
     setPhase('open')
+    // Trigger a brief surge through the rings
+    setSurging(true)
+    setTimeout(() => setSurging(false), 2800)
     if (audioRef.current) {
       audioRef.current.volume = 0
       audioRef.current.play().catch(() => {})
@@ -85,6 +89,30 @@ export default function LandingPage() {
           pointerEvents: 'none',
         }}
       >
+        {/* Surge rings – one-shot ripple on enter, don't affect base rhythm */}
+        <AnimatePresence>
+          {surging && [160, 270, 390, 520].map((size, i) => (
+            <motion.div
+              key={`surge-${size}`}
+              initial={{ opacity: 0.65 - i * 0.08, scale: 1 }}
+              animate={{ opacity: 0, scale: 1.55 + i * 0.05 }}
+              exit={{}}
+              transition={{ duration: 2.0, ease: [0.15, 0, 0.6, 1], delay: i * 0.14 }}
+              style={{
+                position: 'absolute',
+                width: size,
+                height: size,
+                left: -size / 2,
+                top: -size / 2,
+                borderRadius: '50%',
+                border: `1px solid rgba(200,169,106,1)`,
+                boxShadow: `0 0 12px rgba(200,169,106,0.25)`,
+                pointerEvents: 'none',
+              }}
+            />
+          ))}
+        </AnimatePresence>
+
         {[520, 390, 270, 160].map((size, i) => (
           <motion.div
             key={size}

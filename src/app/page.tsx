@@ -179,9 +179,11 @@ export default function LandingPage() {
 
       {/* Content */}
       <LayoutGroup>
-      <div
+      <motion.div
+        layout
         className="relative z-10 flex flex-col items-center text-center px-8"
         style={{ width: 360, marginTop: '-5vh' }}
+        transition={{ layout: { duration: 1.2, ease: 'easeOut' } }}
       >
         {/* Logo – layout-animated so it glides up smoothly when phase changes */}
         <motion.div
@@ -191,7 +193,7 @@ export default function LandingPage() {
           transition={{
             opacity: { duration: 2.5, ease: [0.4, 0, 0.2, 1] },
             scale:   { duration: 2.5, ease: [0.4, 0, 0.2, 1] },
-            layout:  { duration: 1.2, ease: [0.4, 0, 0.2, 1] },
+            layout:  { duration: 1.2, ease: 'easeOut' },
           }}
           className="mb-8"
         >
@@ -213,7 +215,7 @@ export default function LandingPage() {
           transition={{
             scaleX:  { duration: 1.5, delay: 1.2 },
             opacity: { duration: 1.5, delay: 1.2 },
-            layout:  { duration: 1.2, ease: [0.4, 0, 0.2, 1] },
+            layout:  { duration: 1.2, ease: 'easeOut' },
           }}
           style={{ width: 32, height: 1, background: 'rgba(200,169,106,0.45)', marginBottom: 32 }}
         />
@@ -327,7 +329,7 @@ export default function LandingPage() {
             </motion.div>
           )}
         </AnimatePresence>
-      </div>
+      </motion.div>
       </LayoutGroup>
 
       {/* Mute toggle – appears after entering */}

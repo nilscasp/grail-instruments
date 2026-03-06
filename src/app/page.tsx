@@ -191,7 +191,7 @@ export default function LandingPage() {
           transition={{
             opacity: { duration: 2.5, ease: [0.4, 0, 0.2, 1] },
             scale:   { duration: 2.5, ease: [0.4, 0, 0.2, 1] },
-            layout:  { duration: 1.2, ease: [0.4, 0, 0.2, 1] },
+            layout:  { duration: 1.2, ease: 'easeOut' },
           }}
           className="mb-8"
         >
@@ -213,19 +213,19 @@ export default function LandingPage() {
           transition={{
             scaleX:  { duration: 1.5, delay: 1.2 },
             opacity: { duration: 1.5, delay: 1.2 },
-            layout:  { duration: 1.2, ease: [0.4, 0, 0.2, 1] },
+            layout:  { duration: 1.2, ease: 'easeOut' },
           }}
           style={{ width: 32, height: 1, background: 'rgba(200,169,106,0.45)', marginBottom: 32 }}
         />
 
         {/* PHASE 1 & 2 – Client-only to avoid SSR mismatch with AnimatePresence */}
-        <AnimatePresence mode="wait">
+        <AnimatePresence mode="popLayout">
           {mounted && phase === 'gate' && (
             <motion.div
               key="enter-trigger"
               initial={{ opacity: 0, y: 8 }}
               animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -12, scale: 0.95 }}
+              exit={{ opacity: 0, y: -12, scale: 0.95, transition: { duration: 0.4 } }}
               transition={{ duration: 0.8, delay: 1.6 }}
               className="flex flex-col items-center gap-6"
             >

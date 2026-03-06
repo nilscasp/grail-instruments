@@ -13,7 +13,6 @@ export default function LandingPage() {
   const [muted, setMuted] = useState(false)
   const audioRef = useRef<HTMLAudioElement>(null)
   const phaseWrapperRef = useRef<HTMLDivElement>(null)
-  const [phaseMinHeight, setPhaseMinHeight] = useState<number | undefined>()
 
   // Ensure Phase 1 (gate) always renders on the client, never server-side.
   // Framer Motion AnimatePresence has an SSR bug in Next.js static export
@@ -23,10 +22,13 @@ export default function LandingPage() {
   }, [])
 
   const enter = () => {
-    // Freeze the phase wrapper height so the container never collapses
-    // to zero between Phase 1 exit and Phase 2 entry – prevents logo jump
+    // Freeze the phase wrapper height imperatively (before React state update)
+    // so the container never collapses between Phase 1 exit and Phase 2 entry.
+    // Using ref.current.style directly bypasses React 18 automatic batching –
+    // the DOM mutation is synchronous and takes effect before setPhase triggers
+    // a re-render and AnimatePresence begins the exit animation.
     if (phaseWrapperRef.current) {
-      setPhaseMinHeight(phaseWrapperRef.current.offsetHeight)
+      phaseWrapperRef.current.style.minHeight = `${phaseWrapperRef.current.offsetHeight}px`
     }
     setPhase('open')
     if (audioRef.current) {
@@ -226,7 +228,7 @@ export default function LandingPage() {
         />
 
         {/* PHASE 1 & 2 – Client-only to avoid SSR mismatch with AnimatePresence */}
-        <div ref={phaseWrapperRef} style={{ minHeight: phaseMinHeight }}>
+        <div ref={phaseWrapperRef}>
         <AnimatePresence mode="wait">
           {mounted && phase === 'gate' && (
             <motion.div

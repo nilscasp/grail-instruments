@@ -304,13 +304,13 @@ export default function LandingPage() {
               key="newsletter"
               initial={{ opacity: 0, y: 16 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 1.2, ease: 'easeOut', delay: 0.5 }}
+              transition={{ duration: 1.2, ease: 'easeOut', delay: 0.8 }}
               className="flex flex-col items-center gap-0 w-full"
             >
               <motion.p
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.9, delay: 0.2 }}
+                transition={{ duration: 0.9, delay: 1.0 }}
                 className="text-body-md text-muted mb-2"
               >
                 A new world of sound is opening.
@@ -319,7 +319,7 @@ export default function LandingPage() {
               <motion.p
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
-                transition={{ duration: 0.9, delay: 0.6 }}
+                transition={{ duration: 0.9, delay: 1.4 }}
                 className="text-body-sm text-muted-dark mb-9"
                 style={{ lineHeight: 1.7 }}
               >
@@ -329,7 +329,7 @@ export default function LandingPage() {
               <motion.div
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.8, delay: 1 }}
+                transition={{ duration: 0.8, delay: 1.8 }}
                 className="w-full"
               >
                 <NewsletterForm variant="stacked" />

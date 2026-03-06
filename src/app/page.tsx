@@ -12,6 +12,8 @@ export default function LandingPage() {
   const [phase, setPhase] = useState<Phase>('gate')
   const [muted, setMuted] = useState(false)
   const audioRef = useRef<HTMLAudioElement>(null)
+  const phaseWrapperRef = useRef<HTMLDivElement>(null)
+  const [phaseMinHeight, setPhaseMinHeight] = useState<number | undefined>()
 
   // Ensure Phase 1 (gate) always renders on the client, never server-side.
   // Framer Motion AnimatePresence has an SSR bug in Next.js static export
@@ -21,6 +23,11 @@ export default function LandingPage() {
   }, [])
 
   const enter = () => {
+    // Freeze the phase wrapper height so the container never collapses
+    // to zero between Phase 1 exit and Phase 2 entry – prevents logo jump
+    if (phaseWrapperRef.current) {
+      setPhaseMinHeight(phaseWrapperRef.current.offsetHeight)
+    }
     setPhase('open')
     if (audioRef.current) {
       audioRef.current.volume = 0
@@ -191,7 +198,7 @@ export default function LandingPage() {
           transition={{
             opacity: { duration: 2.5, ease: [0.4, 0, 0.2, 1] },
             scale:   { duration: 2.5, ease: [0.4, 0, 0.2, 1] },
-            layout:  { duration: 1.2, ease: 'easeOut' },
+            layout:  { duration: 1.2, ease: [0.4, 0, 0.2, 1] },
           }}
           className="mb-8"
         >
@@ -213,19 +220,20 @@ export default function LandingPage() {
           transition={{
             scaleX:  { duration: 1.5, delay: 1.2 },
             opacity: { duration: 1.5, delay: 1.2 },
-            layout:  { duration: 1.2, ease: 'easeOut' },
+            layout:  { duration: 1.2, ease: [0.4, 0, 0.2, 1] },
           }}
           style={{ width: 32, height: 1, background: 'rgba(200,169,106,0.45)', marginBottom: 32 }}
         />
 
         {/* PHASE 1 & 2 – Client-only to avoid SSR mismatch with AnimatePresence */}
-        <AnimatePresence mode="popLayout">
+        <div ref={phaseWrapperRef} style={{ minHeight: phaseMinHeight }}>
+        <AnimatePresence mode="wait">
           {mounted && phase === 'gate' && (
             <motion.div
               key="enter-trigger"
               initial={{ opacity: 0, y: 8 }}
               animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -12, scale: 0.95, transition: { duration: 0.4 } }}
+              exit={{ opacity: 0, y: -12, scale: 0.95 }}
               transition={{ duration: 0.8, delay: 1.6 }}
               className="flex flex-col items-center gap-6"
             >
@@ -327,6 +335,7 @@ export default function LandingPage() {
             </motion.div>
           )}
         </AnimatePresence>
+        </div>
       </div>
       </LayoutGroup>
 

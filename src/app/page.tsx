@@ -235,7 +235,7 @@ export default function LandingPage() {
               key="enter-trigger"
               initial={{ opacity: 0, y: 8 }}
               animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -12, scale: 0.95, transition: { duration: 0.3 } }}
+              exit={{ opacity: 0, y: -12, scale: 0.95, transition: { duration: 0.6, ease: 'easeInOut' } }}
               transition={{ duration: 0.8, delay: 1.6 }}
               className="flex flex-col items-center gap-6"
             >
@@ -304,7 +304,7 @@ export default function LandingPage() {
               key="newsletter"
               initial={{ opacity: 0, y: 16 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 1.2, ease: 'easeOut' }}
+              transition={{ duration: 1.2, ease: 'easeOut', delay: 0.5 }}
               className="flex flex-col items-center gap-0 w-full"
             >
               <motion.p

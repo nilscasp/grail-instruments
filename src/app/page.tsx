@@ -225,7 +225,7 @@ export default function LandingPage() {
               key="enter-trigger"
               initial={{ opacity: 0, y: 8 }}
               animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -12, scale: 0.95 }}
+              exit={{ opacity: 0, y: -12, scale: 0.95, transition: { duration: 0.4, delay: 0 } }}
               transition={{ duration: 0.8, delay: 1.6 }}
               className="flex flex-col items-center gap-6"
             >

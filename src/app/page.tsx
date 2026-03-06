@@ -219,7 +219,7 @@ export default function LandingPage() {
         />
 
         {/* PHASE 1 & 2 – Client-only to avoid SSR mismatch with AnimatePresence */}
-        <AnimatePresence mode="wait">
+        <AnimatePresence mode="popLayout">
           {mounted && phase === 'gate' && (
             <motion.div
               key="enter-trigger"

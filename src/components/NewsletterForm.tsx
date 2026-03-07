@@ -39,8 +39,8 @@ export function NewsletterForm({ variant = 'stacked', className }: NewsletterFor
   if (status === 'success') {
     return (
       <div className={cn('text-center py-4', className)}>
-        <p className="text-body-md text-muted mb-1">Du bist auf der Liste.</p>
-        <p className="text-body-sm text-muted-dark">Wir melden uns.</p>
+        <p className="text-body-md text-muted mb-1">You are on the list.</p>
+        <p className="text-body-sm text-muted-dark">We will be in touch.</p>
       </div>
     )
   }
@@ -57,7 +57,7 @@ export function NewsletterForm({ variant = 'stacked', className }: NewsletterFor
         type="email"
         value={email}
         onChange={(e) => setEmail(e.target.value)}
-        placeholder="Deine E-Mail"
+        placeholder="Your e-mail"
         required
         className={cn('input', variant === 'stacked' ? 'w-full' : 'flex-1')}
       />
@@ -75,7 +75,7 @@ export function NewsletterForm({ variant = 'stacked', className }: NewsletterFor
 
       {status === 'error' && (
         <p className="text-sm text-rose-400 text-center pt-1">
-          Anmeldung fehlgeschlagen. Bitte erneut versuchen.
+          Something went wrong. Please try again.
         </p>
       )}
     </form>

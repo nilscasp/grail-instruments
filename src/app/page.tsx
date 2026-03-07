@@ -250,7 +250,7 @@ export default function LandingPage() {
               }
               transition={
                 buttonExiting
-                  ? { duration: 0.8, ease: 'easeOut' }
+                  ? { duration: 0.8, ease: [0.4, 0, 0.2, 1] }
                   : { duration: 0.8, delay: 1.6 }
               }
               className="flex flex-col items-center gap-6"

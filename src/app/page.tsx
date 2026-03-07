@@ -11,30 +11,36 @@ export default function LandingPage() {
   const [mounted, setMounted] = useState(false)
   const [phase, setPhase] = useState<Phase>('gate')
   const [muted, setMuted] = useState(false)
+  const [buttonExiting, setButtonExiting] = useState(false)
   const audioRef = useRef<HTMLAudioElement>(null)
   const phaseWrapperRef = useRef<HTMLDivElement>(null)
 
   // Ensure Phase 1 (gate) always renders on the client, never server-side.
-  // Framer Motion AnimatePresence has an SSR bug in Next.js static export
-  // that can cause it to render the wrong phase in the initial HTML.
   useEffect(() => {
     setMounted(true)
   }, [])
 
   const enter = () => {
-    // Freeze the phase wrapper height imperatively (before React state update)
-    // so the container never collapses between Phase 1 exit and Phase 2 entry.
-    // Using ref.current.style directly bypasses React 18 automatic batching –
-    // the DOM mutation is synchronous and takes effect before setPhase triggers
-    // a re-render and AnimatePresence begins the exit animation.
+    // 1. Freeze container height imperatively so it never collapses during the
+    //    gap between Phase 1 and Phase 2 – this gives Framer Motion's FLIP a
+    //    clean single measurement when Phase 2 mounts.
     if (phaseWrapperRef.current) {
       phaseWrapperRef.current.style.minHeight = `${phaseWrapperRef.current.offsetHeight}px`
     }
-    setPhase('open')
+
+    // 2. Trigger the button exit animation via state (not AnimatePresence exit)
+    //    so the button exits in-flow, without being popped out of the layout.
+    setButtonExiting(true)
+
+    // 3. After the button has finished exiting (0.8s), mount Phase 2.
+    //    The container height jumps from Phase-1-height → Phase-2-height exactly
+    //    once, giving the logo a single smooth FLIP upward.
+    setTimeout(() => setPhase('open'), 800)
+
+    // 4. Fade audio in
     if (audioRef.current) {
       audioRef.current.volume = 0
       audioRef.current.play().catch(() => {})
-      // Fade volume in over 3 seconds
       let vol = 0
       const fade = setInterval(() => {
         vol = Math.min(vol + 0.01, 0.65)
@@ -192,7 +198,7 @@ export default function LandingPage() {
         className="relative z-10 flex flex-col items-center text-center px-8"
         style={{ width: 360, marginTop: '-5vh' }}
       >
-        {/* Logo – layout-animated so it glides up smoothly when phase changes */}
+        {/* Logo – layout-animated so it glides up when Phase 2 mounts */}
         <motion.div
           layout
           initial={{ opacity: 0, scale: 0.88 }}
@@ -227,16 +233,26 @@ export default function LandingPage() {
           style={{ width: 32, height: 1, background: 'rgba(200,169,106,0.45)', marginBottom: 32 }}
         />
 
-        {/* PHASE 1 & 2 – Client-only to avoid SSR mismatch with AnimatePresence */}
+        {/* Phase content – no AnimatePresence here.
+            Button exit is driven by `buttonExiting` state → animate prop.
+            Phase 2 mounts via setTimeout after the button has fully exited.
+            This prevents popLayout's snap and mode=wait's empty-gap jump. */}
         <div ref={phaseWrapperRef}>
-        <AnimatePresence mode="popLayout">
+
+          {/* PHASE 1 – sigil enter button */}
           {mounted && phase === 'gate' && (
             <motion.div
-              key="enter-trigger"
               initial={{ opacity: 0, y: 8 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -12, scale: 0.95 }}
-              transition={{ duration: 0.8, delay: 1.6 }}
+              animate={
+                buttonExiting
+                  ? { opacity: 0, y: -12, scale: 0.95 }
+                  : { opacity: 1, y: 0 }
+              }
+              transition={
+                buttonExiting
+                  ? { duration: 0.8, ease: [0.4, 0, 0.2, 1] }
+                  : { duration: 0.8, delay: 1.6 }
+              }
               className="flex flex-col items-center gap-6"
             >
               {/* Pulsing sigil button */}
@@ -301,16 +317,15 @@ export default function LandingPage() {
           {/* PHASE 2 – Copy + newsletter form */}
           {mounted && phase === 'open' && (
             <motion.div
-              key="newsletter"
               initial={{ opacity: 0, y: 16 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 1.2, ease: 'easeOut', delay: 0.8 }}
+              transition={{ duration: 1.2, ease: 'easeOut' }}
               className="flex flex-col items-center gap-0 w-full"
             >
               <motion.p
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.9, delay: 1.0 }}
+                transition={{ duration: 0.9, delay: 0.2 }}
                 className="text-body-md text-muted mb-2"
               >
                 A new world of sound is opening.
@@ -319,7 +334,7 @@ export default function LandingPage() {
               <motion.p
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
-                transition={{ duration: 0.9, delay: 1.4 }}
+                transition={{ duration: 0.9, delay: 0.6 }}
                 className="text-body-sm text-muted-dark mb-9"
                 style={{ lineHeight: 1.7 }}
               >
@@ -329,14 +344,14 @@ export default function LandingPage() {
               <motion.div
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.8, delay: 1.8 }}
+                transition={{ duration: 0.8, delay: 1 }}
                 className="w-full"
               >
                 <NewsletterForm variant="stacked" />
               </motion.div>
             </motion.div>
           )}
-        </AnimatePresence>
+
         </div>
       </div>
       </LayoutGroup>

@@ -25,8 +25,8 @@ const config: Config = {
         'divider-strong': 'rgba(255, 255, 255, 0.15)',
       },
       fontFamily: {
-        serif: ['Cormorant Garamond', 'Playfair Display', 'Georgia', 'serif'],
-        sans: ['Inter', 'Helvetica Neue', 'Arial', 'sans-serif'],
+        serif: ['var(--font-cormorant)', 'Playfair Display', 'Georgia', 'serif'],
+        sans: ['var(--font-inter)', 'Helvetica Neue', 'Arial', 'sans-serif'],
       },
       fontSize: {
         'display-xl': ['clamp(3rem, 8vw, 6rem)', { lineHeight: '1.05', letterSpacing: '-0.02em' }],

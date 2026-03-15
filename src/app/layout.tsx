@@ -1,6 +1,22 @@
 import type { Metadata, Viewport } from 'next'
+import { Cormorant_Garamond, Inter } from 'next/font/google'
 import { siteConfig } from '@/lib/config'
 import './globals.css'
+
+const cormorant = Cormorant_Garamond({
+  subsets: ['latin'],
+  weight: ['300', '400', '500', '600', '700'],
+  style: ['normal', 'italic'],
+  variable: '--font-cormorant',
+  display: 'swap',
+})
+
+const inter = Inter({
+  subsets: ['latin'],
+  weight: ['300', '400', '500', '600'],
+  variable: '--font-inter',
+  display: 'swap',
+})
 
 export const metadata: Metadata = {
   metadataBase: new URL(siteConfig.url),
@@ -69,7 +85,7 @@ export default function RootLayout({
   children: React.ReactNode
 }) {
   return (
-    <html lang="en" className="scroll-smooth">
+    <html lang="en" className={`scroll-smooth ${cormorant.variable} ${inter.variable}`}>
       <head>
         <script
           type="application/ld+json"

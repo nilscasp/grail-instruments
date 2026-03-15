@@ -1,74 +1,101 @@
-import { PageHeader, Section } from '@/components'
-
 export const metadata = {
   title: 'Imprint',
 }
 
+const h2Style: React.CSSProperties = {
+  fontSize: '0.65rem',
+  letterSpacing: '0.2em',
+  textTransform: 'uppercase',
+  color: 'rgba(200,169,106,0.6)',
+  marginBottom: 12,
+  marginTop: 0,
+  fontWeight: 400,
+}
+
+const pStyle: React.CSSProperties = {
+  fontSize: '0.9rem',
+  lineHeight: 1.8,
+  color: 'rgba(220,210,195,0.7)',
+  marginBottom: 12,
+}
+
+const linkStyle: React.CSSProperties = {
+  color: 'rgba(200,169,106,0.75)',
+  textDecoration: 'none',
+}
+
 export default function ImprintPage() {
   return (
-    <>
-      <PageHeader title="Imprint" />
+    <div style={{ minHeight: '100vh', background: '#0A0E14', padding: '80px 24px' }}>
+      <div style={{ maxWidth: 640, margin: '0 auto' }}>
 
-      <Section className="pt-0">
-        <div className="max-w-prose mx-auto prose-grail">
-          <h2>Legal Information</h2>
-          <p>
-            Information pursuant to § 5 TMG (German Telemedia Act):
-          </p>
+        <a href="/" style={{ display: 'inline-block', marginBottom: 48, fontSize: '0.7rem', letterSpacing: '0.2em', textTransform: 'uppercase', color: 'rgba(200,169,106,0.6)', textDecoration: 'none' }}>
+          ← Back
+        </a>
 
-          <h3>Operator</h3>
-          <p>
-            Grail Instruments<br />
-            Nils Caspar<br />
-            [Address Placeholder]<br />
-            [City, Postal Code]<br />
+        <h1 style={{ fontFamily: 'var(--font-cormorant), Georgia, serif', fontSize: '2rem', fontWeight: 400, letterSpacing: '0.05em', color: 'rgba(220,210,195,0.95)', marginBottom: 8, marginTop: 0 }}>
+          Imprint
+        </h1>
+        <div style={{ width: 32, height: 1, background: 'rgba(200,169,106,0.45)', marginBottom: 48 }} />
+
+        <section style={{ marginBottom: 40 }}>
+          <h2 style={h2Style}>Information pursuant to § 5 TMG</h2>
+          <p style={pStyle}>
+            Nils Caspar Böhm<br />
+            Bahnhofstr. 39<br />
+            85386 Eching<br />
             Germany
           </p>
+        </section>
 
-          <h3>Contact</h3>
-          <p>
-            Email: contact@grailinstruments.com<br />
-            Website: grailinstruments.com
+        <section style={{ marginBottom: 40 }}>
+          <h2 style={h2Style}>Contact</h2>
+          <p style={pStyle}>
+            Email: <a href="mailto:info@grail-instruments.com" style={linkStyle}>info@grail-instruments.com</a><br />
+            Website: <a href="https://grail-instruments.com" style={linkStyle}>grail-instruments.com</a>
           </p>
+        </section>
 
-          <h3>VAT ID</h3>
-          <p>
-            VAT identification number pursuant to § 27 a of the German VAT Act:<br />
-            [VAT ID Placeholder]
+        <section style={{ marginBottom: 40 }}>
+          <h2 style={h2Style}>EU Dispute Resolution</h2>
+          <p style={pStyle}>
+            The European Commission provides a platform for online dispute resolution:{' '}
+            <a href="https://ec.europa.eu/consumers/odr" target="_blank" rel="noopener noreferrer" style={linkStyle}>
+              ec.europa.eu/consumers/odr
+            </a>
           </p>
-
-          <h2>Responsible for Content</h2>
-          <p>
-            Responsible for content pursuant to § 55 Abs. 2 RStV:<br />
-            Nils Caspar<br />
-            [Address as above]
-          </p>
-
-          <h2>EU Dispute Resolution</h2>
-          <p>
-            The European Commission provides a platform for online dispute resolution (OS): <a href="https://ec.europa.eu/consumers/odr" target="_blank" rel="noopener noreferrer" className="text-accent hover:underline">https://ec.europa.eu/consumers/odr</a>
-          </p>
-          <p>
+          <p style={pStyle}>
             We are not obligated or willing to participate in dispute resolution proceedings before a consumer arbitration board.
           </p>
+        </section>
 
-          <h2>Disclaimer</h2>
-          <h3>Liability for Content</h3>
-          <p>
-            As a service provider, we are responsible for our own content on these pages in accordance with general laws pursuant to § 7 Abs.1 TMG. However, according to §§ 8 to 10 TMG, we are not obligated as a service provider to monitor transmitted or stored third-party information or to investigate circumstances that indicate illegal activity.
+        <section style={{ marginBottom: 40 }}>
+          <h2 style={h2Style}>Liability for Content</h2>
+          <p style={pStyle}>
+            As a service provider, we are responsible for our own content pursuant to § 7 Abs. 1 TMG.
+            According to §§ 8 to 10 TMG, we are not obligated to monitor transmitted or stored
+            third-party information or to investigate circumstances indicating illegal activity.
           </p>
+        </section>
 
-          <h3>Liability for Links</h3>
-          <p>
-            Our website contains links to external websites of third parties over whose content we have no control. Therefore, we cannot accept any liability for this external content. The respective provider or operator of the pages is always responsible for the content of the linked pages.
+        <section style={{ marginBottom: 40 }}>
+          <h2 style={h2Style}>Liability for Links</h2>
+          <p style={pStyle}>
+            Our website may contain links to external websites over whose content we have no control.
+            The respective provider or operator is always responsible for the content of linked pages.
           </p>
+        </section>
 
-          <h3>Copyright</h3>
-          <p>
-            The content and works created by the site operators on these pages are subject to German copyright law. Duplication, processing, distribution, and any kind of exploitation outside the limits of copyright law require the written consent of the respective author or creator.
+        <section>
+          <h2 style={h2Style}>Copyright</h2>
+          <p style={pStyle}>
+            The content and works on these pages are subject to German copyright law.
+            Duplication, processing, distribution, or any exploitation outside the limits of
+            copyright law requires the written consent of the respective author or creator.
           </p>
-        </div>
-      </Section>
-    </>
+        </section>
+
+      </div>
+    </div>
   )
 }

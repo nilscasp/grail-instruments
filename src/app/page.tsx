@@ -356,6 +356,25 @@ export default function LandingPage() {
       </div>
       </LayoutGroup>
 
+      {/* Legal links */}
+      <div className="absolute bottom-6 left-0 right-0 flex justify-center gap-5 pointer-events-none">
+        <a
+          href="/imprint"
+          className="pointer-events-auto"
+          style={{ fontSize: '0.6rem', letterSpacing: '0.2em', textTransform: 'uppercase', color: 'rgba(200,169,106,0.3)', textDecoration: 'none' }}
+        >
+          Imprint
+        </a>
+        <span style={{ color: 'rgba(200,169,106,0.2)', fontSize: '0.6rem' }}>·</span>
+        <a
+          href="/privacy"
+          className="pointer-events-auto"
+          style={{ fontSize: '0.6rem', letterSpacing: '0.2em', textTransform: 'uppercase', color: 'rgba(200,169,106,0.3)', textDecoration: 'none' }}
+        >
+          Privacy
+        </a>
+      </div>
+
       {/* Mute toggle – appears after entering */}
       <AnimatePresence>
         {phase === 'open' && (

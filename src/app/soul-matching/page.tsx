@@ -411,7 +411,7 @@ export default function SoulMatchingPage() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, delay: 1.2 }}
-            className="text-display-lg md:text-display-xl text-foreground mb-4 max-w-3xl"
+            className="text-display-md md:text-display-lg text-foreground mb-4 max-w-3xl"
           >
             {t.hero.title}
           </motion.h1>

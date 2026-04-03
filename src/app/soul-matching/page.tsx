@@ -509,6 +509,38 @@ export default function SoulMatchingPage() {
           title={t.about.title}
         />
 
+        {/* Portrait + Name */}
+        <motion.div
+          initial={{ opacity: 0, y: 16 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.8 }}
+          className="flex flex-col items-center mb-12"
+        >
+          <div
+            className="mb-5"
+            style={{
+              width: 100,
+              height: 100,
+              borderRadius: '50%',
+              overflow: 'hidden',
+              border: '1px solid rgba(200,169,106,0.35)',
+              boxShadow: '0 0 24px rgba(200,169,106,0.12)',
+            }}
+          >
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src="/images/nils-portrait.jpg"
+              alt="Nils Caspar"
+              style={{ width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'center top' }}
+            />
+          </div>
+          <p className="font-serif text-foreground text-lg tracking-wide">Nils Caspar</p>
+          <p className="text-caption text-muted tracking-widest uppercase mt-1" style={{ fontSize: '0.65rem', letterSpacing: '0.2em' }}>
+            {lang === 'de' ? 'Handpan-Berater & Lehrer' : 'Handpan Consultant & Teacher'}
+          </p>
+        </motion.div>
+
         <div className="grid sm:grid-cols-2 gap-6 max-w-5xl mx-auto">
           {t.about.pillars.map((pillar, index) => {
             const Icon = iconMap[pillar.icon as keyof typeof iconMap]

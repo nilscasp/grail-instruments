@@ -16,8 +16,12 @@ export default function LandingPage() {
   const phaseWrapperRef = useRef<HTMLDivElement>(null)
 
   // Ensure Phase 1 (gate) always renders on the client, never server-side.
+  // If ?open is in the URL, skip the gate and go directly to the newsletter form.
   useEffect(() => {
     setMounted(true)
+    if (new URLSearchParams(window.location.search).has('open')) {
+      setPhase('open')
+    }
   }, [])
 
   const enter = () => {

@@ -635,7 +635,7 @@ export default function SoulMatchingPage() {
                 </li>
               ))}
             </ul>
-            <Button href="/" variant="secondary" size="md">
+            <Button href="/?open" variant="secondary" size="md">
               {t.paths.path2.cta}
             </Button>
           </motion.div>

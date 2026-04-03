@@ -21,6 +21,7 @@ export const navigation = {
     { name: 'Curation', href: '/curation' },
     { name: 'Makers', href: '/makers' },
     { name: 'Journal', href: '/journal' },
+    { name: 'Soul Matching', href: '/soul-matching' },
   ],
   cta: { name: 'Apply', href: '/apply' },
   footer: [

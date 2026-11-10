@@ -23,11 +23,14 @@
 <script type="module">
 // Grail-Hero: polierter, glatter Edelstahl mit Anlauffarben (Farbverlauf aus dem Bild von Nils' Schwester),
 // das Zeichen per Laser eingraviert. Keine Wölbung, keine Strömung, keine Mausreaktion.
-// Bewegung: die Spiegelung gleitet sehr langsam (nur verschieben, minimal drehen und zoomen),
-// ein breiter weicher Glanz wandert darüber, das Licht an den Gravurkanten wandert mit.
-// URL: ?tempo=1 (Geschwindigkeit), ?tiefe=1 (Tiefe der Gravur), ?glanz=1 (Stärke des Glanzes)
+// Bewegung (Standard „flaechen“): der Verlauf ist in neun weiche Farbflächen zerlegt (Orange, Weiß, Flieder, Karmin,
+// Weinrot, Dunkel …). Jede wandert langsam auf eigener Bahn, dehnt und dreht sich und schiebt sich in die Nachbarn;
+// im Mittel bleibt das Bild der Schwester. „gleiten“: der ganze Verlauf gleitet nur (frühere Fassung).
+// Dazu ein breiter weicher Glanz, das Licht an den Gravurkanten wandert mit.
+// URL: ?bewegung=flaechen|gleiten, ?tempo=1, ?weite=1 (wie weit die Flächen wandern), ?tiefe=1, ?grund=.32, ?glanz=1
 const q = new URLSearchParams(location.search);
 const tempo = +(q.get('tempo') ?? 1), tiefe = +(q.get('tiefe') ?? 1), glanz = +(q.get('glanz') ?? 1), grundHell = +(q.get('grund') ?? .32);
+const modus = q.get('bewegung') === 'gleiten' ? 0 : 1, weite = +(q.get('weite') ?? 1);
 const still = matchMedia('(prefers-reduced-motion: reduce)').matches;
 const hero = document.getElementById('hero'), logoEl = document.getElementById('logo'), cv = document.getElementById('stahl');
 
@@ -38,13 +41,20 @@ if (gl) start(gl);
 
 async function start(gl) {
   const farben = new Image(); farben.src = 'aktuell/grail-stahl-farben.png'; await farben.decode();
+  // Farbflächen: aus dem Verlauf der Schwester angepasst (werkzeuge/flaechen-anpassen.html), in Ruhe = ihr Bild
+  const flaechen = (await (await fetch('aktuell/grail-flaechen.json')).json()).flaechen;
   const logoImg = new Image(); logoImg.src = 'data:image/svg+xml,' + encodeURIComponent(svgText); await logoImg.decode();
 
   const vs = `attribute vec2 p; void main(){ gl_Position = vec4(p, 0., 1.); }`;
   const fs = `precision highp float;
   uniform sampler2D farben, maske;
   uniform vec2 res, farbGr, streck;
-  uniform float t, glanz, tiefPx, grundHell;
+  uniform float t, glanz, tiefPx, grundHell, modus;
+  #define N ${flaechen.length}
+  uniform vec2 fc[N];   // Mitte der Fläche (Bildkoordinaten)
+  uniform vec4 fg[N];   // Ausdehnung sx, sy und Drehung cos, sin
+  uniform vec3 fcol[N]; // Farbe
+  uniform float fgew[N]; // Zusatzgewicht (log), hält kleine Flächen wie das Weiß in Bewegung sichtbar
 
   // weiche (B-Spline-)Abtastung, damit der hochskalierte Verlauf keine Kanten bekommt
   vec4 kubik(float v){ vec4 n = vec4(1., 2., 3., 4.) - v; vec4 s = n * n * n;
@@ -67,12 +77,28 @@ async function start(gl) {
     vec2 px = gl_FragCoord.xy;
     vec2 su = px / res;                               // Bildschirm 0..1 (y nach oben)
 
-    // Spiegelung gleitet: nur verschieben, minimal drehen und zoomen (keine Verzerrung, kein Knick)
     vec2 c = (su - .5) * streck;                      // Bild einpassen (siehe streck)
-    float a = .03 * sin(t * TAU / 89.);
-    c = mat2(cos(a), -sin(a), sin(a), cos(a)) * c * (1. - .025 * sin(t * TAU / 61.));
-    c += vec2(.035 * sin(t * TAU / 53.), .025 * sin(t * TAU / 71. + 1.));
-    vec3 col = weich(farben, c + .5, farbGr);
+    vec3 col;
+    if (modus > .5) {
+      // Farbflächen: jede Fläche (weiche, gedrehte Ellipse) wandert, dehnt und dreht sich; gemischt wird normiert,
+      // dadurch bleiben die Übergänge fein und weich, egal wie die Flächen ineinanderschieben.
+      vec2 b = vec2(c.x + .5, .5 - c.y);              // Bildkoordinaten (y nach unten wie in der Vorlage)
+      float qf[N]; float qmin = 1e9;
+      for (int k = 0; k < N; k++) {
+        vec2 dd = b - fc[k];
+        vec2 uv = vec2(dot(dd, fg[k].zw), dot(dd, vec2(-fg[k].w, fg[k].z))) / fg[k].xy;
+        qf[k] = dot(uv, uv) - fgew[k]; qmin = min(qmin, qf[k]);
+      }
+      vec3 acc = vec3(0.); float sw = 0.;
+      for (int k = 0; k < N; k++) { float w = exp(-(qf[k] - qmin)); acc += w * fcol[k]; sw += w; }
+      col = acc / sw;
+    } else {
+      // Spiegelung gleitet: nur verschieben, minimal drehen und zoomen (keine Verzerrung, kein Knick)
+      float a = .03 * sin(t * TAU / 89.);
+      c = mat2(cos(a), -sin(a), sin(a), cos(a)) * c * (1. - .025 * sin(t * TAU / 61.));
+      c += vec2(.035 * sin(t * TAU / 53.), .025 * sin(t * TAU / 71. + 1.));
+      col = weich(farben, c + .5, farbGr);
+    }
 
     // breiter, weicher Glanz, der langsam diagonal über den Stahl wandert
     float d = dot(su - .5, normalize(vec2(1., .75)));
@@ -163,9 +189,48 @@ async function start(gl) {
   let wait; addEventListener('resize', () => { clearTimeout(wait); wait = setTimeout(maske, 80); });
   hero.classList.add('gravur');
 
-  const uT = U('t'), t0 = performance.now() - 8000;
+  // Bahnen der Farbflächen: jede Fläche bekommt feste, eigene, nicht gleich lange Perioden, damit sich das
+  // Zusammenspiel kaum wiederholt. Jede Bahn = zwei überlagerte Schwingungen → Schleifen statt Pendeln.
+  // Die Flächen atmen nur leicht (±8 %): stärker kleiner → harte Übergänge, alle größer → Farben verwässern (Weiß geht verloren).
+  gl.uniform1f(U('modus'), modus);
+  let seed = 7; const rnd = () => (seed = (seed * 16807) % 2147483647) / 2147483647;
+  const hex = h => [1, 3, 5].map(i => parseInt(h.slice(i, i + 2), 16) / 255);
+  const bahn = flaechen.map(f => {
+    // Flächen am Bildrand (Weiß und Flieder oben, Dunkel unten links) gleiten am Rand entlang statt hinaus,
+    // sonst verschwinden sie; die weiße Fläche ist ohnehin klein und wandert ruhiger.
+    const hell = hex(f.farbe).reduce((a, b) => a + b) / 3 > .85;
+    const A = hell ? .45 : 1, randX = f.x < .22 || f.x > .78 ? .4 : 1, randY = f.y < .22 || f.y > .78 ? .35 : 1;
+    return {
+      px: 24 + rnd() * 30, py: 27 + rnd() * 30, ps: 21 + rnd() * 20, pa: 30 + rnd() * 30,
+      qx: 11 + rnd() * 9, qy: 12 + rnd() * 9,
+      fx: rnd() * 6.28, fy: rnd() * 6.28, fs: rnd() * 6.28, fa: rnd() * 6.28, gx: rnd() * 6.28, gy: rnd() * 6.28,
+      ax: A * randX * (.10 + rnd() * .06), ay: A * randY * (.09 + rnd() * .06),
+    };
+  });
+  gl.uniform3fv(U('fcol'), new Float32Array(flaechen.flatMap(f => hex(f.farbe))));
+  // In Ruhe ist die kleine weiße Fläche genau im Gleichgewicht; jede Bewegung der Nachbarn drängt sie im Mittel zurück.
+  // Darum bekommt sie in Bewegung etwas Zusatzgewicht (?weiss=…, 0 = aus), in Ruhe (weite 0) nicht.
+  const weissGew = +(q.get('weiss') ?? .7) * Math.min(1, weite);
+  gl.uniform1fv(U('fgew'), new Float32Array(flaechen.map(f => hex(f.farbe).reduce((a, b) => a + b) / 3 > .85 ? weissGew : 0)));
+  const fcArr = new Float32Array(flaechen.length * 2), fgArr = new Float32Array(flaechen.length * 4);
+  const uFc = U('fc'), uFg = U('fg'), TAU = Math.PI * 2;
+  function flaechenBewegen(t) {
+    flaechen.forEach((f, k) => {
+      const b = bahn[k], s = Math.sin;
+      fcArr[k * 2] = f.x + weite * b.ax * (s(TAU * t / b.px + b.fx) + .4 * s(TAU * t / b.qx + b.gx));
+      fcArr[k * 2 + 1] = f.y + weite * b.ay * (s(TAU * t / b.py + b.fy) + .4 * s(TAU * t / b.qy + b.gy));
+      const a = f.a + weite * .45 * s(TAU * t / b.pa + b.fa);
+      const dehn = p => 1 + .08 * s(p);                                     // ±8 %: atmen, ohne zu verwässern oder hart zu werden
+      fgArr.set([f.sx * dehn(TAU * t / b.ps + b.fs), f.sy * dehn(TAU * t / b.ps * 1.37 + b.fs + 2), Math.cos(a), Math.sin(a)], k * 4);
+    });
+    gl.uniform2fv(uFc, fcArr); gl.uniform4fv(uFg, fgArr);
+  }
+
+  const uT = U('t'), t0 = performance.now() - 1000 * +(q.get('zeit') ?? 8); // ?zeit=… springt an eine Stelle (zum Prüfen)
   const frame = now => {
-    gl.uniform1f(uT, (now - t0) / 1000 * tempo);
+    const t = (now - t0) / 1000 * tempo;
+    if (modus) flaechenBewegen(t);
+    gl.uniform1f(uT, t);
     gl.drawArrays(gl.TRIANGLES, 0, 3);
     if (!still) requestAnimationFrame(frame);
   };

@@ -1,0 +1,100 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<title>Farben extrahieren</title>
+<style>
+  body { margin: 0; padding: 16px; font: 13px system-ui, sans-serif; background: #222; color: #eee; }
+  .reihe { display: flex; gap: 12px; flex-wrap: wrap; }
+  canvas { width: 360px; height: auto; background: #000; }
+  pre { white-space: pre-wrap; }
+</style>
+</head>
+<body>
+<div class="reihe"><canvas id="a"></canvas><canvas id="b"></canvas><canvas id="c"></canvas></div>
+<pre id="out"></pre>
+<script type="module">
+// Zieht aus dem Farbbild (Schwester) den reinen Farbverlauf ohne Logo und misst die Körnung.
+// Ergebnis: ../aktuell/grail-stahl-farben.png (Verlauf, Logo herausgerechnet) und Werte für den Shader.
+const img = new Image(); img.src = '../original/grail-farbbild-schwester.webp'; await img.decode();
+const W = img.naturalWidth, H = img.naturalHeight;
+const ca = document.getElementById('a'); ca.width = W; ca.height = H;
+const xa = ca.getContext('2d', { willReadFrequently: true }); xa.drawImage(img, 0, 0);
+const px = xa.getImageData(0, 0, W, H).data;
+
+// 1) Tinte des Logos finden: sehr dunkle Pixel im Logo-Bereich, dann großzügig erweitern
+const BOX = { x0: 290, x1: 940, y0: 180, y1: 1050 };
+const ink = new Uint8Array(W * H);
+for (let y = BOX.y0; y < BOX.y1; y++) for (let x = BOX.x0; x < BOX.x1; x++) {
+  const i = (y * W + x) * 4;
+  if (Math.max(px[i], px[i + 1], px[i + 2]) < 95) ink[y * W + x] = 1;
+}
+const DIL = 7, mask = new Uint8Array(W * H);
+for (let y = 0; y < H; y++) for (let x = 0; x < W; x++) if (ink[y * W + x])
+  for (let dy = -DIL; dy <= DIL; dy++) for (let dx = -DIL; dx <= DIL; dx++) {
+    const X = x + dx, Y = y + dy;
+    if (X >= 0 && Y >= 0 && X < W && Y < H && dx * dx + dy * dy <= DIL * DIL) mask[Y * W + X] = 1;
+  }
+{ const v = xa.getImageData(0, 0, W, H); for (let i = 0; i < W * H; i++) if (mask[i]) v.data.set([0, 255, 0, 255], i * 4); xa.putImageData(v, 0, 0); }
+
+// 2) Körnung messen in logofreien Flächen: Pixel minus 9x9-Mittel
+function grain(x0, y0, w, h) {
+  const n = [], r = 4; let sr = 0, sg = 0, sb = 0, cor = 0, cnt = 0;
+  for (let y = y0 + r; y < y0 + h - r; y++) for (let x = x0 + r; x < x0 + w - r; x++) {
+    let m = [0, 0, 0];
+    for (let dy = -r; dy <= r; dy++) for (let dx = -r; dx <= r; dx++) { const j = ((y + dy) * W + x + dx) * 4; m[0] += px[j]; m[1] += px[j + 1]; m[2] += px[j + 2]; }
+    const k = (2 * r + 1) ** 2, j = (y * W + x) * 4;
+    const d = [px[j] - m[0] / k, px[j + 1] - m[1] / k, px[j + 2] - m[2] / k];
+    sr += d[0] * d[0]; sg += d[1] * d[1]; sb += d[2] * d[2]; cor += d[0] * d[2]; cnt++;
+  }
+  const s = [Math.sqrt(sr / cnt), Math.sqrt(sg / cnt), Math.sqrt(sb / cnt)];
+  return { std: s.map(v => +v.toFixed(2)), korrelationRB: +((cor / cnt) / (s[0] * s[2])).toFixed(2) };
+}
+const grains = { obenRechts: grain(1000, 40, 200, 200), orangeLinks: grain(40, 300, 200, 200), weinUnten: grain(950, 950, 200, 200), dunkelUntenLinks: grain(20, 1050, 150, 150) };
+
+// 3) Verlauf ohne Logo: auf 1/4 verkleinern (nur freie Pixel mitteln), Lücken per Diffusion füllen, leicht weichzeichnen
+const S = 4, w = Math.ceil(W / S), h = Math.ceil(H / S);
+const col = new Float32Array(w * h * 3), known = new Uint8Array(w * h);
+for (let by = 0; by < h; by++) for (let bx = 0; bx < w; bx++) {
+  let r = 0, g = 0, b = 0, c = 0, all = 0;
+  for (let y = by * S; y < Math.min(H, by * S + S); y++) for (let x = bx * S; x < Math.min(W, bx * S + S); x++) {
+    all++; if (mask[y * W + x]) continue; const i = (y * W + x) * 4; r += px[i]; g += px[i + 1]; b += px[i + 2]; c++;
+  }
+  const k = by * w + bx;
+  if (c > all * .5) { col[k * 3] = r / c; col[k * 3 + 1] = g / c; col[k * 3 + 2] = b / c; known[k] = 1; }
+}
+// Diffusion: unbekannte Zellen = Mittel der Nachbarn, bekannte bleiben fest
+const unk = []; for (let k = 0; k < w * h; k++) if (!known[k]) unk.push(k);
+let filled = Uint8Array.from(known);
+for (let it = 0; it < 1500; it++) {
+  for (const k of unk) {
+    const x = k % w, y = (k / w) | 0; let r = 0, g = 0, b = 0, c = 0;
+    for (const [dx, dy] of [[1, 0], [-1, 0], [0, 1], [0, -1]]) {
+      const X = x + dx, Y = y + dy; if (X < 0 || Y < 0 || X >= w || Y >= h) continue;
+      const j = Y * w + X; if (!filled[j]) continue; r += col[j * 3]; g += col[j * 3 + 1]; b += col[j * 3 + 2]; c++;
+    }
+    if (c) { col[k * 3] = r / c; col[k * 3 + 1] = g / c; col[k * 3 + 2] = b / c; filled[k] = 1; }
+  }
+}
+const cb = document.getElementById('b'); cb.width = w; cb.height = h;
+const xb = cb.getContext('2d'); const ib = xb.createImageData(w, h);
+for (let k = 0; k < w * h; k++) ib.data.set([col[k * 3], col[k * 3 + 1], col[k * 3 + 2], 255], k * 4);
+xb.putImageData(ib, 0, 0);
+// weichzeichnen (entfernt Restkörnung und Spuren der Füllung) und auf Zielgröße bringen
+const OW = 256, OH = Math.round(256 * H / W);
+const cc = document.getElementById('c'); cc.width = OW; cc.height = OH;
+const xc = cc.getContext('2d'); xc.filter = 'blur(2px)'; xc.imageSmoothingQuality = 'high';
+// Rand mitzeichnen, damit die Unschärfe am Bildrand nicht ins Schwarze läuft
+xc.drawImage(cb, -6, -6, OW + 12, OH + 12);
+const blob = await new Promise(r => cc.toBlob(r, 'image/png'));
+const res = await fetch('/speichern/aktuell/grail-stahl-farben.png', { method: 'PUT', body: blob });
+
+// Ecken-/Kernfarben zur Kontrolle
+const at = (x, y) => { const d = xc.getImageData(Math.round(x * (OW - 1)), Math.round(y * (OH - 1)), 1, 1).data; return '#' + [d[0], d[1], d[2]].map(v => v.toString(16).padStart(2, '0')).join(''); };
+const farben = { obenLinks: at(0, 0), oben: at(.55, 0), obenRechts: at(1, 0), links: at(0, .4), mitte: at(.5, .45), rechts: at(1, .45), untenLinks: at(0, 1), unten: at(.5, 1), untenRechts: at(1, 1) };
+const out = { bild: [W, H], verlauf: [OW, OH], gespeichert: await res.text(), grains, farben };
+document.getElementById('out').textContent = JSON.stringify(out, null, 1);
+window.__out = out;
+</script>
+</body>
+</html>

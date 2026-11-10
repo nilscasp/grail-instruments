@@ -1,0 +1,176 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Grail Instruments</title>
+<style>
+  :root { --tinte: #1d1d1b; }
+  html, body { margin: 0; height: 100%; background: #8a0928; }
+  .hero { position: relative; min-height: 100svh; display: grid; place-items: center; overflow: hidden;
+    background: url('aktuell/grail-stahl-farben.png') center / 100% 100% no-repeat, #8a0928; } /* Standbild ohne WebGL */
+  canvas { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
+  .logo { position: relative; width: min(52vw, 46svh, 420px); color: var(--tinte); }
+  .logo svg { display: block; width: 100%; height: auto; transition: opacity .4s; }
+  .hero.gravur .logo svg { opacity: 0; } /* Zeichen kommt dann als Gravur aus dem Canvas */
+</style>
+</head>
+<body>
+<section class="hero" id="hero">
+  <canvas id="stahl" aria-hidden="true"></canvas>
+  <div class="logo" id="logo" role="img" aria-label="Grail Instruments"></div>
+</section>
+<script type="module">
+// Grail-Hero: polierter, glatter Edelstahl mit Anlauffarben (Farbverlauf aus dem Bild von Nils' Schwester),
+// das Zeichen per Laser eingraviert. Keine Wölbung, keine Strömung, keine Mausreaktion.
+// Bewegung: die Spiegelung gleitet sehr langsam (nur verschieben, minimal drehen und zoomen),
+// ein breiter weicher Glanz wandert darüber, das Licht an den Gravurkanten wandert mit.
+// URL: ?tempo=1 (Geschwindigkeit), ?tiefe=1 (Tiefe der Gravur), ?glanz=1 (Stärke des Glanzes)
+const q = new URLSearchParams(location.search);
+const tempo = +(q.get('tempo') ?? 1), tiefe = +(q.get('tiefe') ?? 1), glanz = +(q.get('glanz') ?? 1), grundHell = +(q.get('grund') ?? .32);
+const still = matchMedia('(prefers-reduced-motion: reduce)').matches;
+const hero = document.getElementById('hero'), logoEl = document.getElementById('logo'), cv = document.getElementById('stahl');
+
+const svgText = await (await fetch('aktuell/grail-logo-dunkel.svg')).text();
+logoEl.innerHTML = svgText.replace('#1d1d1b', 'currentColor').replaceAll('"#1d1d1b"', '"currentColor"');
+const gl = cv.getContext('webgl', { antialias: false });
+if (gl) start(gl);
+
+async function start(gl) {
+  const farben = new Image(); farben.src = 'aktuell/grail-stahl-farben.png'; await farben.decode();
+  const logoImg = new Image(); logoImg.src = 'data:image/svg+xml,' + encodeURIComponent(svgText); await logoImg.decode();
+
+  const vs = `attribute vec2 p; void main(){ gl_Position = vec4(p, 0., 1.); }`;
+  const fs = `precision highp float;
+  uniform sampler2D farben, maske;
+  uniform vec2 res, farbGr, streck;
+  uniform float t, glanz, tiefPx, grundHell;
+
+  // weiche (B-Spline-)Abtastung, damit der hochskalierte Verlauf keine Kanten bekommt
+  vec4 kubik(float v){ vec4 n = vec4(1., 2., 3., 4.) - v; vec4 s = n * n * n;
+    float x = s.x, y = s.y - 4. * s.x, z = s.z - 4. * s.y + 6. * s.x; return vec4(x, y, z, 6. - x - y - z) / 6.; }
+  vec3 weich(sampler2D tx, vec2 uv, vec2 gr){
+    uv = uv * gr - .5; vec2 f = fract(uv); uv -= f;
+    vec4 xc = kubik(f.x), yc = kubik(f.y);
+    vec4 c = uv.xxyy + vec2(-.5, 1.5).xyxy;
+    vec4 s = vec4(xc.xz + xc.yw, yc.xz + yc.yw);
+    vec4 o = (c + vec4(xc.yw, yc.yw) / s) / gr.xxyy;
+    vec3 s0 = texture2D(tx, o.xz).rgb, s1 = texture2D(tx, o.yz).rgb, s2 = texture2D(tx, o.xw).rgb, s3 = texture2D(tx, o.yw).rgb;
+    float sx = s.x / (s.x + s.y), sy = s.z / (s.z + s.w);
+    return mix(mix(s3, s2, sx), mix(s1, s0, sx), sy); }
+
+  float hash(vec2 p){ return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453); }
+  float korn(vec2 p){ return hash(p) + hash(p + 71.3) - 1.; } // weicher als gleichverteilt
+
+  const float TAU = 6.2831853;
+  void main(){
+    vec2 px = gl_FragCoord.xy;
+    vec2 su = px / res;                               // Bildschirm 0..1 (y nach oben)
+
+    // Spiegelung gleitet: nur verschieben, minimal drehen und zoomen (keine Verzerrung, kein Knick)
+    vec2 c = (su - .5) * streck;                      // Bild einpassen (siehe streck)
+    float a = .03 * sin(t * TAU / 89.);
+    c = mat2(cos(a), -sin(a), sin(a), cos(a)) * c * (1. - .025 * sin(t * TAU / 61.));
+    c += vec2(.035 * sin(t * TAU / 53.), .025 * sin(t * TAU / 71. + 1.));
+    vec3 col = weich(farben, c + .5, farbGr);
+
+    // breiter, weicher Glanz, der langsam diagonal über den Stahl wandert
+    float d = dot(su - .5, normalize(vec2(1., .75)));
+    float lauf = 1.25 * sin(t * TAU / 97.);
+    float sheen = glanz * .085 * exp(-pow((d - lauf) / .32, 2.));
+    col += (vec3(1., .96, .9) - col) * sheen;
+
+    // Gravur als Vertiefung. Alle Effekte liegen INNERHALB des Zeichens (Deckung m):
+    //  - Schlagschatten: die Kante zum Licht wirft einen Schatten in die Rille (Punkt Richtung Licht liegt schon auf der Oberfläche)
+    //  - Lichtwand: die gegenüberliegende Innenwand fängt Licht
+    //  - Grund: dunkler, matter Stahl, in dem die Anlauffarbe noch durchscheint
+    float la = 2.36 + .3 * sin(t * TAU / 97.);                            // Licht von oben links, wandert leicht mit dem Glanz
+    vec2 zumLicht = vec2(cos(la), sin(la)) * tiefPx / res;
+    // Kanten scharf wie ein Schnitt in Edelstahl: Schatten und Lichtwand kommen aus der scharfen Maske (R).
+    // Außerhalb des Zeichens ändert sich nichts – die Gravur nimmt nur weg.
+    float m = texture2D(maske, su).r;
+    float schatten = m * (1. - texture2D(maske, su + zumLicht).r);        // harter Schlagschatten der oberen Kante
+    float wand = m * (1. - texture2D(maske, su - zumLicht * .5).r);      // schmale, hell getroffene Gegenwand
+    float tiefe = m * (1. - texture2D(maske, su + zumLicht * 2.2).b);     // etwas Tiefe neben dem Schatten
+    float lum = dot(col, vec3(.3, .55, .15));
+    vec3 grund = mix(col, vec3(lum), .3) * grundHell;                     // matter Grund, Anlauffarbe scheint durch
+    grund *= 1. - .22 * tiefe;
+    grund *= 1. - .85 * schatten;
+    grund += (col * .75 + vec3(.3, .27, .24)) * wand;
+    col = mix(col, grund, m);
+
+    // Körnung wie im Original: halb hell/dunkel, halb farbig; im gravierten Grund etwas rauer
+    float k = 1. + 1.2 * m;
+    float mono = korn(px);
+    vec3 farb = vec3(korn(px + 17.1), korn(px + 39.7), korn(px + 83.3));
+    col += (mono * .0145 + farb * .0145) * k;
+
+    gl_FragColor = vec4(col, 1.);
+  }`;
+  const sh = (type, src) => { const s = gl.createShader(type); gl.shaderSource(s, src); gl.compileShader(s); if (!gl.getShaderParameter(s, gl.COMPILE_STATUS)) throw gl.getShaderInfoLog(s); return s; };
+  const pr = gl.createProgram();
+  gl.attachShader(pr, sh(gl.VERTEX_SHADER, vs)); gl.attachShader(pr, sh(gl.FRAGMENT_SHADER, fs)); gl.linkProgram(pr); gl.useProgram(pr);
+  gl.bindBuffer(gl.ARRAY_BUFFER, gl.createBuffer());
+  gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1,-1, 3,-1, -1,3]), gl.STATIC_DRAW);
+  const loc = gl.getAttribLocation(pr, 'p'); gl.enableVertexAttribArray(loc); gl.vertexAttribPointer(loc, 2, gl.FLOAT, false, 0, 0);
+  const U = n => gl.getUniformLocation(pr, n);
+
+  const tex = (unit, src) => {
+    const t = gl.createTexture(); gl.activeTexture(gl.TEXTURE0 + unit); gl.bindTexture(gl.TEXTURE_2D, t);
+    gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, true);
+    gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, src);
+    for (const [k, v] of [[gl.TEXTURE_MIN_FILTER, gl.LINEAR], [gl.TEXTURE_MAG_FILTER, gl.LINEAR], [gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE], [gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE]]) gl.texParameteri(gl.TEXTURE_2D, k, v);
+    return t;
+  };
+  tex(0, farben);
+  gl.uniform1i(U('farben'), 0); gl.uniform1i(U('maske'), 1);
+  gl.uniform2f(U('farbGr'), farben.naturalWidth, farben.naturalHeight);
+  gl.uniform1f(U('glanz'), glanz); gl.uniform1f(U('grundHell'), grundHell);
+
+  // Maske des Zeichens in Canvas-Auflösung: R = scharf, G = weich (Höhe der Gravurkanten)
+  const mc = document.createElement('canvas'), mx = mc.getContext('2d');
+  const sharp = document.createElement('canvas'), sx = sharp.getContext('2d');
+  let maskTex = null, d = 1;
+  function maske() {
+    d = Math.min(devicePixelRatio || 1, 2);
+    cv.width = Math.round(cv.clientWidth * d); cv.height = Math.round(cv.clientHeight * d);
+    gl.viewport(0, 0, cv.width, cv.height);
+    const b = logoEl.getBoundingClientRect(), c = cv.getBoundingClientRect();
+    const x = (b.left - c.left) * d, y = (b.top - c.top) * d, w = b.width * d, h = w * 352.83 / 268.63;
+    for (const k of [mc, sharp]) { k.width = cv.width; k.height = cv.height; }
+    sx.clearRect(0, 0, sharp.width, sharp.height); sx.drawImage(logoImg, x, y, w, h);
+    const tief = tiefe * Math.max(1.6, w / 260);                      // Tiefe der Rille in Pixeln, wächst mit der Logogröße
+    gl.uniform1f(U('tiefPx'), tief);
+    mx.fillStyle = '#000'; mx.fillRect(0, 0, mc.width, mc.height);
+    mx.globalCompositeOperation = 'lighter';
+    // Kanal R: scharfe Deckung, G: leicht weich (Lichtwand), B: weicher (Schlagschatten)
+    const tint = (src, color, filter) => { const t = document.createElement('canvas'); t.width = src.width; t.height = src.height;
+      const tx = t.getContext('2d'); tx.filter = filter; tx.drawImage(src, 0, 0); tx.filter = 'none';
+      tx.globalCompositeOperation = 'source-in'; tx.fillStyle = color; tx.fillRect(0, 0, t.width, t.height); return t; };
+    mx.drawImage(tint(sharp, '#f00', 'none'), 0, 0);
+    mx.drawImage(tint(sharp, '#0f0', `blur(${tief * .3}px)`), 0, 0);
+    mx.drawImage(tint(sharp, '#00f', `blur(${tief * .6}px)`), 0, 0);
+    mx.globalCompositeOperation = 'source-over';
+    if (!maskTex) maskTex = tex(1, mc); else { gl.activeTexture(gl.TEXTURE1); gl.bindTexture(gl.TEXTURE_2D, maskTex); gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, true); gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, mc); }
+    // Bild einpassen: der weiche Verlauf darf sich bis Faktor 1,8 strecken, damit möglichst das ganze Bild
+    // (oben Creme, unten Weinrot, links Orange, rechts Karmin) sichtbar bleibt; darüber hinaus wird beschnitten.
+    const ia = farben.naturalWidth / farben.naturalHeight, ca = cv.width / cv.height;
+    const r = ca / ia, MAX = 1.8;                                     // r > 1: Bildschirm breiter als Bild
+    gl.uniform2f(U('streck'), r > 1 ? 1 : Math.min(1, MAX * r), r > 1 ? Math.min(1, MAX / r) : 1);
+    gl.uniform2f(U('res'), cv.width, cv.height);
+  }
+  maske();
+  let wait; addEventListener('resize', () => { clearTimeout(wait); wait = setTimeout(maske, 80); });
+  hero.classList.add('gravur');
+
+  const uT = U('t'), t0 = performance.now() - 8000;
+  const frame = now => {
+    gl.uniform1f(uT, (now - t0) / 1000 * tempo);
+    gl.drawArrays(gl.TRIANGLES, 0, 3);
+    if (!still) requestAnimationFrame(frame);
+  };
+  requestAnimationFrame(frame);
+}
+</script>
+</body>
+</html>

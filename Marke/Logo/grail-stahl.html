@@ -1,0 +1,151 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Grail Instruments</title>
+<style>
+  :root { --tinte: #1d1d1b; }
+  html, body { margin: 0; height: 100%; background: #8c1030; }
+  .hero { position: relative; min-height: 100svh; display: grid; place-items: center; overflow: hidden;
+    background:
+      radial-gradient(60% 60% at 62% 0%, #f6e6d6 0%, rgba(246,230,214,0) 70%),
+      radial-gradient(70% 80% at 8% 40%, #f5961c 0%, rgba(245,150,28,0) 70%),
+      radial-gradient(70% 60% at 0% 100%, #2a0805 0%, rgba(42,8,5,0) 60%),
+      #a0122f; }
+  canvas { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
+  .logo { position: relative; width: min(52vw, 46svh, 420px); color: var(--tinte); }
+  .logo svg { display: block; width: 100%; height: auto; }
+</style>
+</head>
+<body>
+<section class="hero">
+  <canvas id="stahl" aria-hidden="true"></canvas>
+  <div class="logo" id="logo" role="img" aria-label="Grail Instruments"></div>
+</section>
+<script>
+fetch('aktuell/grail-logo-currentcolor.svg').then(r => r.text()).then(t => document.getElementById('logo').innerHTML = t);
+
+// Spiegelung auf poliertem Stahl.
+// Die Farben sind eine Lichtumgebung (Farbfelder + weiche Lichtleisten), die sich in einer gespannten, glatten
+// Stahlschale spiegelt: leichte Wölbung, Ding in der Mitte, acht flache Tonfelder im Kreis um das Zeichen.
+// Bewegung: die Umgebung dreht und wandert sehr langsam, die Schale „atmet“ kaum merklich.
+// Dadurch gleiten die Spiegelungen als zusammenhängende Bänder über die Kurven, statt zu strömen. Keine Mausreaktion.
+// URL: ?tempo=1 (Geschwindigkeit), ?felder=.2 (Tiefe der Tonfelder, 0 = nur Wölbung)
+const q = new URLSearchParams(location.search);
+const tempo = +(q.get('tempo') ?? 1), felder = +(q.get("felder") ?? .2);
+const still = matchMedia('(prefers-reduced-motion: reduce)').matches;
+const cv = document.getElementById('stahl');
+const gl = cv.getContext('webgl', { antialias: false });
+if (gl) {
+  const vs = `attribute vec2 p; void main(){ gl_Position = vec4(p, 0., 1.); }`;
+  const fs = `precision highp float;
+  uniform vec2 res; uniform float t; uniform float felder; uniform vec2 mitte;
+  const float PI = 3.14159265;
+
+  // Höhe der Stahlschale an der Stelle p (Einheit: kurze Bildseite = 1, Mitte = Logo-Zeichen)
+  float hoehe(vec2 p){
+    float r2 = dot(p, p);
+    float h = -.55 * r2;                                   // Wölbung der Schale
+    h += .045 * exp(-r2 / .0045);                          // Ding in der Mitte
+    float atem = 1. + .08 * sin(t * 2.1);                  // kaum merkliches Atmen
+    for (int i = 0; i < 8; i++) {                          // acht Tonfelder
+      float a = float(i) * PI / 4. - PI / 2.;
+      vec2 c = .50 * vec2(cos(a), sin(a));
+      vec2 d = p - c;
+      vec2 ax = vec2(cos(a), sin(a));
+      float u = dot(d, ax), v = dot(d, vec2(-ax.y, ax.x));  // u radial, v tangential
+      float e = u * u / .022 + v * v / .014;               // Ellipse, radial etwas länger
+      h -= felder * atem * .022 * exp(-e);                  // flache Mulde
+      h += felder * .005 * exp(-pow(sqrt(e) - 1.35, 2.) / .12); // weicher Rand der Mulde
+    }
+    return h;
+  }
+
+  // Lichtumgebung: Richtung -> Farbe. Lage wie im Grail-Bild, dazu weiche Lichtleisten.
+  void feld(inout vec3 acc, inout float w, vec2 q, vec2 c, float s, vec3 col){
+    float g = exp(-dot(q - c, q - c) / (s * s)); acc += col * g; w += g; }
+  vec3 umgebung(vec2 q){
+    vec3 acc = vec3(0.); float w = 0.;
+    feld(acc, w, q, vec2(.08, .45), .40, vec3(.961, .560, .090)); // Orange
+    feld(acc, w, q, vec2(.30, .05), .28, vec3(.985, .690, .280)); // Goldorange
+    feld(acc, w, q, vec2(.62, -.04), .28, vec3(.975, .915, .860)); // Creme
+    feld(acc, w, q, vec2(.90, .14), .24, vec3(.760, .560, .720)); // Flieder
+    feld(acc, w, q, vec2(.95, .62), .38, vec3(.620, .050, .180)); // Karmin
+    feld(acc, w, q, vec2(.52, .86), .36, vec3(.520, .030, .140)); // Weinrot
+    feld(acc, w, q, vec2(-.06, 1.04), .30, vec3(.120, .030, .015)); // Dunkel
+    vec3 col = acc / max(w, 1e-4);
+    // Lichtleisten (wie Softboxen im Studio): schmale helle Bänder, eines warm, eines kühl, dazu ein dunkles Band
+    float l1 = exp(-pow((q.y - .22 - .10 * sin(q.x * 2.3)) / .045, 2.));
+    float l2 = exp(-pow((q.x + .35 * q.y - 1.02) / .06, 2.));
+    float d1 = exp(-pow((q.y - .62 + .12 * q.x) / .09, 2.));
+    col = mix(col, vec3(1., .93, .82), .55 * l1);
+    col = mix(col, vec3(.93, .82, .92), .35 * l2);
+    col *= 1. - .35 * d1;
+    return col;
+  }
+
+  float hash(vec2 p){ return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453); }
+
+  void main(){
+    float s = min(res.x, res.y);
+    vec2 uv = gl_FragCoord.xy / res; uv.y = 1. - uv.y;
+    vec2 p = (vec2(gl_FragCoord.x, res.y - gl_FragCoord.y) - mitte) / s;
+
+    // Normale der Schale
+    float e = 1.5 / s;
+    float hx = (hoehe(p + vec2(e, 0.)) - hoehe(p - vec2(e, 0.))) / (2. * e);
+    float hy = (hoehe(p + vec2(0., e)) - hoehe(p - vec2(0., e))) / (2. * e);
+    vec3 n = normalize(vec3(-hx, -hy, 1.));
+
+    // Spiegelung: Blick von vorn
+    vec3 r = reflect(vec3(0., 0., -1.), n);
+    // Umgebung dreht und wandert langsam
+    float a = .35 * sin(t * .9) + t * .25;
+    mat2 R = mat2(cos(a), -sin(a), sin(a), cos(a));
+    vec2 ref = R * r.xy;
+    vec2 qq = .5 + (uv - .5) * vec2(res.x / s, res.y / s) * .45 + ref * .55
+              + vec2(.06 * sin(t * .7), .05 * cos(t * .55));
+    vec3 col = umgebung(qq);
+
+    // Metall: leicht warm getönt, Glanzpunkt, etwas Tiefe an steilen Stellen
+    col *= vec3(1., .975, .95);
+    vec3 L = normalize(vec3(-.8 + .2 * sin(t * .8), -.55, 1.));
+    float spec = pow(max(dot(r, L), 0.), 260.);
+    col += vec3(1., .95, .88) * spec * .55;
+    col *= .88 + .12 * n.z * n.z;
+
+    // ganz feine, stehende Körnung (glatt, aber nicht steril)
+    col += (hash(gl_FragCoord.xy) - .5) * .03;
+    gl_FragColor = vec4(col, 1.);
+  }`;
+  const sh = (type, src) => { const s = gl.createShader(type); gl.shaderSource(s, src); gl.compileShader(s); if (!gl.getShaderParameter(s, gl.COMPILE_STATUS)) throw gl.getShaderInfoLog(s); return s; };
+  const pr = gl.createProgram();
+  gl.attachShader(pr, sh(gl.VERTEX_SHADER, vs)); gl.attachShader(pr, sh(gl.FRAGMENT_SHADER, fs)); gl.linkProgram(pr); gl.useProgram(pr);
+  gl.bindBuffer(gl.ARRAY_BUFFER, gl.createBuffer());
+  gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1,-1, 3,-1, -1,3]), gl.STATIC_DRAW);
+  const loc = gl.getAttribLocation(pr, 'p'); gl.enableVertexAttribArray(loc); gl.vertexAttribPointer(loc, 2, gl.FLOAT, false, 0, 0);
+  const U = n => gl.getUniformLocation(pr, n);
+  const uRes = U('res'), uT = U('t'), uF = U('felder'), uM = U('mitte');
+  const logo = document.getElementById('logo');
+  let d = 1;
+  const resize = () => { d = Math.min(devicePixelRatio || 1, 1.5); cv.width = cv.clientWidth * d; cv.height = cv.clientHeight * d; gl.viewport(0, 0, cv.width, cv.height); };
+  addEventListener('resize', resize); resize();
+  // Mitte der Schale = Mitte des Zeichens (Kreis im Logo: x 136.9/268.6, y 108.6/352.8)
+  const mitte = () => { const b = logo.getBoundingClientRect(), c = cv.getBoundingClientRect();
+    return b.width ? [(b.left - c.left + b.width * 136.9 / 268.63) * d, (b.top - c.top + b.height * 108.6 / 352.83) * d] : [cv.width / 2, cv.height * .42]; };
+  const t0 = performance.now() - 15000;
+  const frame = now => {
+    gl.uniform2f(uRes, cv.width, cv.height);
+    gl.uniform2f(uM, ...mitte());
+    gl.uniform1f(uF, felder);
+    gl.uniform1f(uT, (now - t0) / 1000 * .04 * tempo);
+    gl.drawArrays(gl.TRIANGLES, 0, 3);
+    if (!still) requestAnimationFrame(frame);
+  };
+  requestAnimationFrame(frame);
+  if (still) new MutationObserver(() => requestAnimationFrame(frame)).observe(logo, { childList: true });
+}
+</script>
+</body>
+</html>

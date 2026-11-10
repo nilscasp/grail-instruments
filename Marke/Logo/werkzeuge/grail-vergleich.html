@@ -1,0 +1,123 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Grail-Zeichen Vergleich</title>
+<style>
+  body { margin: 0; font: 14px/1.4 system-ui, sans-serif; background: #f4f1ec; color: #1d1d1b; }
+  main { display: grid; grid-template-columns: minmax(0, 1fr) 320px; gap: 20px; padding: 20px; }
+  .bilder { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
+  figure { margin: 0; background: #fff; padding: 8px; border-radius: 6px; }
+  figcaption { font-size: 12px; opacity: .7; margin-top: 4px; }
+  canvas { width: 100%; height: auto; display: block; }
+  label { display: grid; grid-template-columns: 80px 1fr 56px; gap: 8px; align-items: center; margin: 4px 0; }
+  #score { font-size: 22px; font-weight: 600; }
+  button { padding: 8px 12px; margin: 8px 8px 0 0; }
+  pre { white-space: pre-wrap; font-size: 11px; background: #fff; padding: 8px; }
+</style>
+</head>
+<body>
+<main>
+  <div class="bilder">
+    <figure><canvas id="orig"></canvas><figcaption>Original (Lookbook)</figcaption></figure>
+    <figure><canvas id="neu"></canvas><figcaption>Nachbau</figcaption></figure>
+    <figure><canvas id="diff"></canvas><figcaption>Rot = nur Original, Blau = nur Nachbau</figcaption></figure>
+  </div>
+  <aside>
+    <div>Deckung (IoU): <span id="score">–</span></div>
+    <div id="regler"></div>
+    <button id="fit">Automatisch anpassen</button>
+    <pre id="out"></pre>
+  </aside>
+</main>
+<script type="module">
+import { GRAIL, zeichenInner } from './grail-zeichen.js';
+
+const S = 700; // Arbeitsgröße
+const P = { ...GRAIL };
+const RANGES = { tip: [50, 66], neck: [20, 36], width: [.7, 1.4], ri: [8, 15], dot: [2, 6], oval: [.6, 1.4], ovalPos: [.55, .85], rc: [58, 68], sw: [.8, 2.4], swc: [.8, 2.4], turn: [-100, -80] };
+
+const img = new Image();
+img.src = '../original/grail-zeichen-original-2540.png';
+await img.decode();
+
+// Original: Tintenmaske und Lage des Außenkreises bestimmen
+const oc = document.getElementById('orig'); oc.width = oc.height = S;
+const ox = oc.getContext('2d', { willReadFrequently: true });
+ox.fillStyle = '#fff'; ox.fillRect(0, 0, S, S); ox.drawImage(img, 0, 0, S, S);
+const od = ox.getImageData(0, 0, S, S).data;
+const ink = new Uint8Array(S * S);
+let x0 = S, x1 = 0, y0 = S, y1 = 0;
+for (let i = 0; i < S * S; i++) if (od[i * 4] < 128) { ink[i] = 1; const x = i % S, y = (i / S) | 0; x0 = Math.min(x0, x); x1 = Math.max(x1, x); y0 = Math.min(y0, y); y1 = Math.max(y1, y); }
+const cx = (x0 + x1) / 2, cy = (y0 + y1) / 2, rOuter = ((x1 - x0) + (y1 - y0)) / 4; // Außenkante des Außenkreises
+
+const nc = document.getElementById('neu'); nc.width = nc.height = S;
+const nx = nc.getContext('2d', { willReadFrequently: true });
+const dc = document.getElementById('diff'); dc.width = dc.height = S;
+const dx = dc.getContext('2d');
+
+async function render(p, draw = true) {
+  const k = rOuter / (p.rc + p.swc / 2);
+  const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${S}" height="${S}"><rect width="${S}" height="${S}" fill="#fff"/><g transform="translate(${cx} ${cy}) scale(${k})">${zeichenInner(p, '#000')}</g></svg>`;
+  const im = new Image(); im.src = 'data:image/svg+xml,' + encodeURIComponent(svg); await im.decode();
+  nx.drawImage(im, 0, 0);
+  const nd = nx.getImageData(0, 0, S, S).data;
+  let inter = 0, uni = 0;
+  const diff = draw ? dx.createImageData(S, S) : null;
+  for (let i = 0; i < S * S; i++) {
+    const a = ink[i], b = nd[i * 4] < 128 ? 1 : 0;
+    if (a && b) inter++; if (a || b) uni++;
+    if (diff) { const o = i * 4; const c = a && b ? [60, 60, 60] : a ? [220, 40, 40] : b ? [40, 90, 230] : [255, 255, 255]; diff.data.set([...c, 255], o); }
+  }
+  if (diff) dx.putImageData(diff, 0, 0);
+  return inter / uni;
+}
+
+const regler = document.getElementById('regler');
+const inputs = {};
+for (const [key, [lo, hi]] of Object.entries(RANGES)) {
+  const l = document.createElement('label');
+  l.innerHTML = `<span>${key}</span><input type="range" min="${lo}" max="${hi}" step="${(hi - lo) / 400}" value="${P[key]}"><output>${P[key]}</output>`;
+  const inp = l.querySelector('input'), out = l.querySelector('output');
+  inp.oninput = () => { P[key] = +inp.value; out.value = (+inp.value).toFixed(3); update(); };
+  inputs[key] = { inp, out };
+  regler.append(l);
+}
+const sync = () => { for (const k in inputs) { inputs[k].inp.value = P[k]; inputs[k].out.value = (+P[k]).toFixed(3); } };
+async function update() {
+  const s = await render(P);
+  document.getElementById('score').textContent = (s * 100).toFixed(2) + ' %';
+  document.getElementById('out').textContent = JSON.stringify(P, null, 1);
+  window.__score = s;
+  return s;
+}
+
+// Koordinatenabstieg über alle Regler
+async function fit(rounds = 4) {
+  let best = await render(P, false);
+  for (let r = 0; r < rounds; r++) {
+    for (const [key, [lo, hi]] of Object.entries(RANGES)) {
+      let step = (hi - lo) / (8 * (r + 1));
+      for (let it = 0; it < 6; it++) {
+        let moved = false;
+        for (const dir of [1, -1]) {
+          const old = P[key];
+          P[key] = Math.min(hi, Math.max(lo, old + dir * step));
+          const s = await render(P, false);
+          if (s > best + 1e-5) { best = s; moved = true; break; }
+          P[key] = old;
+        }
+        if (!moved) step /= 2;
+      }
+    }
+  }
+  sync();
+  return update();
+}
+document.getElementById('fit').onclick = fit;
+window.__fit = fit; window.__P = P; window.__update = update;
+await update();
+</script>
+</body>
+</html>

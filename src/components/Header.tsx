@@ -6,7 +6,7 @@ import { usePathname } from 'next/navigation'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Menu, X } from 'lucide-react'
 import { cn } from '@/lib/utils'
-import { navigation, siteConfig } from '@/lib/config'
+import { navigation } from '@/lib/config'
 
 export function Header() {
   const [isScrolled, setIsScrolled] = useState(false)
@@ -35,21 +35,6 @@ export function Header() {
             : 'bg-transparent'
         )}
       >
-        {/* Portal Status Banner */}
-        {siteConfig.portalStatus === 'open' && (
-          <div className="bg-accent/10 border-b border-accent/20">
-            <div className="container-content py-2 text-center">
-              <Link
-                href="/portal"
-                className="text-caption text-accent hover:text-accent-light transition-colors"
-              >
-                <span className="inline-block w-2 h-2 rounded-full bg-accent animate-pulse mr-2" />
-                Portal is Open — Limited instruments available
-              </Link>
-            </div>
-          </div>
-        )}
-
         <div className="container-content">
           <nav className="flex items-center justify-between h-20">
             {/* Logo */}
@@ -78,9 +63,6 @@ export function Header() {
                   {item.name}
                 </Link>
               ))}
-              <Link href={navigation.cta.href} className="btn-primary text-xs">
-                {navigation.cta.name}
-              </Link>
             </div>
 
             {/* Mobile Menu Button */}
@@ -136,16 +118,6 @@ export function Header() {
                     </Link>
                   </motion.div>
                 ))}
-                <motion.div
-                  initial={{ opacity: 0, x: 20 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  transition={{ delay: navigation.main.length * 0.05 }}
-                  className="pt-6 border-t border-divider"
-                >
-                  <Link href={navigation.cta.href} className="btn-primary w-full">
-                    {navigation.cta.name}
-                  </Link>
-                </motion.div>
               </div>
             </motion.nav>
           </motion.div>

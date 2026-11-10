@@ -2,4 +2,4 @@
 User-agent: *
 Allow: /
 
-Sitemap: https://grailinstruments.com/sitemap.xml
+Sitemap: https://grail-instruments.com/sitemap.xml

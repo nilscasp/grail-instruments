@@ -59,39 +59,6 @@ export function SectionHeader({
   )
 }
 
-interface PageHeaderProps {
-  title: string
-  description?: string
-  className?: string
-}
-
-export function PageHeader({ title, description, className }: PageHeaderProps) {
-  return (
-    <div className={cn('pt-32 pb-16 md:pt-40 md:pb-20', className)}>
-      <div className="container-content text-center">
-        <motion.h1
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6 }}
-          className="text-display-lg md:text-display-xl text-foreground mb-4"
-        >
-          {title}
-        </motion.h1>
-        {description && (
-          <motion.p
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, delay: 0.1 }}
-            className="text-body-lg text-muted max-w-2xl mx-auto"
-          >
-            {description}
-          </motion.p>
-        )}
-      </div>
-    </div>
-  )
-}
-
 interface DividerProps {
   className?: string
   withGradient?: boolean

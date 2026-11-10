@@ -360,8 +360,16 @@ export default function LandingPage() {
       </div>
       </LayoutGroup>
 
-      {/* Legal links */}
+      {/* Quiet links – the second door (consultation) sits here, visible before "enter" */}
       <div className="absolute bottom-6 left-0 right-0 flex justify-center gap-5 pointer-events-none">
+        <a
+          href="/soul-matching"
+          className="pointer-events-auto"
+          style={{ fontSize: '0.6rem', letterSpacing: '0.2em', textTransform: 'uppercase', color: 'rgba(200,169,106,0.3)', textDecoration: 'none' }}
+        >
+          Beratung
+        </a>
+        <span style={{ color: 'rgba(200,169,106,0.2)', fontSize: '0.6rem' }}>·</span>
         <a
           href="/imprint"
           className="pointer-events-auto"
